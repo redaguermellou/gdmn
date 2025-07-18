@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Dossiers Médicaux | Système Médical</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a7bb9;
+            --secondary-blue: #2c9ab7;
+            --light-blue: #e8f4fc;
+            --dark-blue: #0d5a8a;
+            --success-green: #28a745;
+            --warning-yellow: #ffc107;
+            --danger-red: #dc3545;
+            --gray-medium: #6c757d;
+            --gray-light: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f5f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Improved Search bar styles */
+        .search-container {
+            position: relative;
+            width: 40px;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .search-container.expanded {
+            width: 200px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding-left: 35px;
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            height: 35px;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .search-input:focus {
+            background-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+        
+        .search-btn {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+        }
+        
+        .footer {
+            background: var(--gray-light);
+            padding: 1rem 0;
+            color: var(--gray-medium);
+            font-size: 0.95rem;
+        }
+        
+        .user-info {
+            color: #fff;
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+        
+        .logout-btn {
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'redirect_home' %}">
+                <i class="fas fa-heartbeat"></i>
+                <span>GDMN</span>
+            </a>
+
+            <!-- Left-aligned elements -->
+            <div class="d-flex align-items-center order-lg-1">
+                
+                
+                <a href="/admin/" target="_blank" class="btn btn-warning btn-sm me-2" title="Admin Panel">
+                    <i class="fas fa-cog"></i>
+                    <span class="d-none d-md-inline">Admin</span>
+                </a>
+            </div>
+
+            <!-- Improved Search Form -->
+         
+
+            <!-- Right-aligned user info -->
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center order-lg-2">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>
+                        <span class="d-none d-md-inline">Connecté en tant que:</span>
+                        <strong>{{ request.user.full_name }}</strong>
+                        <span class="d-none d-lg-inline">({{ request.user.role.get_name_display }})</span>
+                    </span>
+                </div>
+                <a href="{% url 'logout' %}" class="btn btn-danger btn-sm logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="d-none d-sm-inline">Déconnexion</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div class="container">
+            
+
+            <main class="main-container">
+                {% block content %}
+                <!-- Content will be injected here -->
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="d-flex justify-content-center align-items-center">
+                <i class="fas fa-shield-alt me-2"></i>
+                <span>Système sécurisé de gestion des dossiers médicaux - © 2025</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchContainer = document.getElementById('searchContainer');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Expand on input focus
+           
+            
+            // Mobile behavior - always show expanded on mobile
+            function handleMobileView() {
+                if (window.innerWidth < 768) {
+                    searchContainer && searchContainer.classList.add('expanded');
+                } else if (searchInput && searchInput.value === '') {
+                    searchContainer && searchContainer.classList.remove('expanded');
+                }
+            }
+            
+            // Check on load and resize
+            handleMobileView();
+            window.addEventListener('resize', handleMobileView);
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

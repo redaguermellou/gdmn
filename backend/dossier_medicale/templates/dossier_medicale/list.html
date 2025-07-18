@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Medical Dossiers</h1>
+<ul>
+    {% for dossier in dossiers %}
+    <li>
+        <a href="{% url 'dossier_detail' dossier.id %}">
+            {{ dossier.reference }} - {{ dossier.employer }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

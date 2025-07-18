@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-3">
+    <h2 class="mb-4 fw-bold text-primary">
+        <i class="fas fa-file-medical me-2"></i>Dossier #{{ dossier.reference }}
+        <span class="badge bg-{{ dossier.get_status_color }} ms-2 align-middle">
+            {{ dossier.get_status_display }}
+        </span>
+    </h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="mb-0 fw-semibold text-secondary">Informations Générales</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-user me-1"></i>Employé :</strong> {{ dossier.employer }}</p>
+                    <p><strong><i class="fas fa-building me-1"></i>Département :</strong> {{ dossier.department }}</p>
+                    <p><strong><i class="fas fa-user-md me-1"></i>Médecin :</strong> {{ dossier.doctor }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-calendar-plus me-1"></i>Date début :</strong> {{ dossier.start_date }}</p>
+                    <p><strong><i class="fas fa-calendar-minus me-1"></i>Date fin :</strong> {{ dossier.end_date|default:"-" }}</p>
+                    <p><strong><i class="fas fa-clock me-1"></i>Créé le :</strong> {{ dossier.created_at }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-notes-medical me-1"></i>Diagnostic :</strong></p>
+                    <p class="bg-light rounded p-2">{{ dossier.diagnosis }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-pills me-1"></i>Plan de traitement :</strong></p>
+                    <p class="bg-light rounded p-2">{{ dossier.treatment_plan }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3"><i class="fas fa-paperclip me-2"></i>Pièces jointes</h4>
+    <div class="list-group mb-4">
+        {% for attachment in attachments %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1"><i class="fas fa-file-alt me-2 text-info"></i>{{ attachment.nom_fichier }}</h6>
+                <small class="text-muted">{{ attachment.type }} &middot; {{ attachment.taille_ko }} KB</small>
+            </div>
+            <a href="{{ attachment.chemin_storage.url }}" class="btn btn-sm btn-outline-primary" download>
+                <i class="fas fa-download me-1"></i>Télécharger
+            </a>
+        </div>
+        {% empty %}
+        <div class="list-group-item text-muted">Aucune pièce jointe trouvée.</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{% url 'upload_document' dossier.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-upload me-2"></i>Uploader un document
+        </a>
+        <a href="{% url 'generate_report' dossier.id %}" class="btn btn-outline-info">
+            <i class="fas fa-file-download me-2"></i>Générer Rapport
+        </a>
+    </div>
+
+    {% if dossier.status == 'SUBMITTED' and request.user.role.name in 'ADMIN,CONTROLLER' %}
+    <div class="d-flex gap-2 mb-4">
+        <form method="post" action="{% url 'approve_dossier' dossier.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check me-1"></i>Approuver
+            </button>
+        </form>
+        <form method="post" action="{% url 'reject_dossier' dossier.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-times me-1"></i>Rejeter
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <div id="msg-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} fade show" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            var msg = document.getElementById('msg-container');
+            if (msg) { msg.style.display = 'none'; }
+        }, 3500);
+    </script>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(30, 136, 229, 0.07);
+}
+.card-header {
+    border-radius: 16px 16px 0 0;
+    background: #fafdff;
+}
+.list-group-item {
+    border-radius: 8px !important;
+    margin-bottom: 8px;
+    border: 1px solid #e6eaf1;
+}
+.btn-outline-primary, .btn-outline-info {
+    min-width: 180px;
+    border-radius: 2rem;
+}
+.btn-success, .btn-danger {
+    border-radius: 2rem;
+    min-width: 120px;
+}
+.alert {
+    transition: opacity 0.5s;
+}
+</style>
+{% endblock %}

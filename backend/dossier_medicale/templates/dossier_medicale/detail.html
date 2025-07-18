@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="container-fluid">
+    {% if dossiers %}
+        {% for dossier in dossiers %}
+        <!-- Your existing loop content -->
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            No dossiers found for this user.
+        </div>
+    {% endif %}
+</div>
+
+<div class="container-fluid">
+    {% for dossier in dossiers %}
+    <div class="row g-4 mb-4 dossier-container">
+        <!-- Main Dossier Info -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0 text-primary">
+                        <i class="fas fa-folder-open me-2"></i>Dossier #{{ dossier.reference }}
+                    </h4>
+                    <span class="badge rounded-pill bg-{% if dossier.status == 'PENDING' %}warning{% elif dossier.status == 'APPROVED' %}success{% elif dossier.status == 'REJECTED' %}danger{% else %}secondary{% endif %}">
+                        {{ dossier.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Matricule Employé:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.employer }}</p>
+                            </div>
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Service:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.department }}</p>
+                            </div>
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Date Début:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.start_date|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Médecin:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.doctor }}</p>
+                            </div>
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Motif:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.reason }}</p>
+                            </div>
+                            <div class="dossier-info-item mb-3">
+                                <span class="text-muted small">Créé le:</span>
+                                <p class="mb-0 fw-bold">{{ dossier.created_at|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="dossier-comments">
+                        <h6 class="text-muted mb-2">Commentaires:</h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-0">{{ dossier.comments|default:"Aucun commentaire"|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Column -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% for action in dossier.actions %}
+                            <a href="{{ action.url }}" class="btn btn-{% if action.name == 'reject' %}outline-danger{% elif action.name == 'approve' %}outline-success{% elif action.name == 'download_all' %}outline-primary{% else %}outline-secondary{% endif %} btn-sm text-start">
+                                <i class="fas fa-{% if action.name == 'download_all' %}download{% elif action.name == 'upload' %}upload{% elif action.name == 'scan' %}camera{% elif action.name == 'generate_report' %}file-pdf{% else %}edit{% endif %} me-2"></i>
+                                {{ action.label }}
+                            </a>
+                        {% endfor %}
+                        <a href="{% url 'generate_report' dossier.id %}" class="btn btn-outline-info btn-sm text-start">
+                            <i class="fas fa-file-download me-2"></i>Télécharger Rapport
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachments Section -->
+        <div class="col-12 mt-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-paperclip me-2"></i>Pièces Jointes</h5>
+                </div>
+                <div class="card-body">
+                    {% if dossier.documents %}
+                        <div class="row g-3">
+                            {% for document in dossier.documents %}
+                                <div class="col-md-4 col-lg-3">
+                                    <div class="card document-card h-100 border">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-file-{% if document.type == 'PRESCRIPTION' %}prescription{% elif document.type == 'CERTIFICATE' %}certificate{% elif document.type == 'SCAN' %}image{% else %}alt{% endif %} me-2 text-muted"></i>
+                                                <h6 class="mb-0 text-truncate">{{ document.name }}</h6>
+                                            </div>
+                                            <div class="text-muted small mb-3">
+                                                <div>{{ document.get_type_display }}</div>
+                                                <div>{{ document.size_kb }} KB</div>
+                                                <div>Ajouté le {{ document.uploaded_at|date:"d/m/Y" }}</div>
+                                            </div>
+                                            <div class="mt-auto">
+                                                <a href="{{ document.chemin_storage.url }}" class="btn btn-sm btn-outline-primary w-100" download>
+                                                    <i class="fas fa-download me-1"></i> Télécharger
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-light border text-center py-4">
+                            <i class="fas fa-info-circle fa-2x mb-3 text-muted"></i>
+                            <p class="mb-0">Aucune pièce jointe disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .dossier-container {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 2rem;
+    }
+    .dossier-container:last-child {
+        border-bottom: none;
+    }
+    .dossier-info-item {
+        background-color: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+    .document-card {
+        transition: transform 0.2s;
+    }
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}

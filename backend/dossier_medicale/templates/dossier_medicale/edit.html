@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h3 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-edit me-2"></i>{{ title }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div id="msg-container">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} fade show" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                var msg = document.getElementById('msg-container');
+                                if (msg) { msg.style.display = 'none'; }
+                            }, 3500);
+                        </script>
+                    {% endif %}
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Enregistrer
+                            </button>
+                            <a href="{% url 'dossier_detail' dossier.id %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.card {
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(30, 136, 229, 0.07);
+}
+.card-header {
+    border-radius: 16px 16px 0 0;
+    background: #fafdff;
+}
+.btn-success, .btn-secondary {
+    border-radius: 2rem;
+    min-width: 120px;
+}
+.alert {
+    transition: opacity 0.5s;
+}
+</style>
+{% endblock %}
