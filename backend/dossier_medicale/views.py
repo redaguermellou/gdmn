@@ -191,6 +191,14 @@ def create_dossier(request):
                 dossier.status = 'SUBMITTED'
                 dossier.save()
 
+                # Audit Log: Create
+                DossierAuditLog.objects.create(
+                    dossier=dossier,
+                    action='CREATE',
+                    user=request.user,
+                    details={'reference': dossier.reference, 'status': dossier.status}
+                )
+
                 # Handle file attachments - UPDATED to match model fields
                 files = request.FILES.getlist('attachments')
                 for file in files:
@@ -202,6 +210,13 @@ def create_dossier(request):
                         taille_ko=file.size // 1024,  # Calculate size in KB
                         uploaded_by=request.user,  # Only if your model has this field
                         description=f"Attached {file.name}"  # Only if your model has this field
+                    )
+                    # Audit Log: Attachment
+                    DossierAuditLog.objects.create(
+                        dossier=dossier,
+                        action='ATTACHMENT_ADD',
+                        user=request.user,
+                        details={'filename': file.name, 'size_kb': file.size // 1024}
                     )
 
                 messages.success(request, f'Dossier {dossier.reference} created successfully!')
@@ -244,7 +259,18 @@ def edit_dossier(request, dossier_id):
     if request.method == 'POST':
         form = DossierForm(request.POST, instance=dossier)
         if form.is_valid():
+            # Track changes could be implemented here if needed, for now just logging the event
+            old_status = dossier.status
             updated_dossier = form.save()
+            
+            # Audit Log: Update
+            DossierAuditLog.objects.create(
+                dossier=updated_dossier,
+                action='UPDATE',
+                user=request.user,
+                details={'changes': 'Dossier updated via edit form'}
+            )
+            
             messages.success(request, f'Dossier {updated_dossier.reference} updated successfully!')
             return redirect('dossier_detail', dossier_id=dossier.id)
     else:
@@ -275,6 +301,15 @@ def upload_document(request, dossier_id):
             else:
                 piece.taille_ko = 0
             piece.save()
+
+            # Audit Log: Attachment Add
+            DossierAuditLog.objects.create(
+                dossier=dossier,
+                action='ATTACHMENT_ADD',
+                user=request.user,
+                details={'filename': piece.nom_fichier, 'type': piece.type}
+            )
+
             messages.success(request, 'Document uploaded successfully!')
             return redirect('dossier_detail', dossier_id=dossier.id)
     else:
@@ -311,8 +346,19 @@ def approve_dossier(request, dossier_id):
     dossier = get_object_or_404(DossierMedical, pk=dossier_id)
     if request.user.role.name not in ['CONTROLLER', 'ADMIN']:
         return HttpResponseForbidden()
+    
+    old_status = dossier.status
     dossier.status = 'APPROVED'
     dossier.save()
+    
+    # Audit Log: Status Change
+    DossierAuditLog.objects.create(
+        dossier=dossier,
+        action='STATUS_CHANGE',
+        user=request.user,
+        details={'old_status': old_status, 'new_status': 'APPROVED'}
+    )
+
     messages.success(request, 'Dossier approved successfully!')
     return redirect('dossier_detail', dossier_id=dossier.id)
 
@@ -321,8 +367,19 @@ def reject_dossier(request, dossier_id):
     dossier = get_object_or_404(DossierMedical, pk=dossier_id)
     if request.user.role.name not in ['CONTROLLER', 'ADMIN']:
         return HttpResponseForbidden()
+    
+    old_status = dossier.status
     dossier.status = 'REJECTED'
     dossier.save()
+
+    # Audit Log: Status Change
+    DossierAuditLog.objects.create(
+        dossier=dossier,
+        action='STATUS_CHANGE',
+        user=request.user,
+        details={'old_status': old_status, 'new_status': 'REJECTED'}
+    )
+
     messages.warning(request, 'Dossier has been rejected.')
     return redirect('dossier_detail', dossier_id=dossier.id)
 
@@ -392,6 +449,15 @@ def scan_document(request, dossier_id):
                 type='SCAN',
                 uploaded_by=request.user
             )
+
+            # Audit Log: Scan Attachment
+            DossierAuditLog.objects.create(
+                dossier=dossier,
+                action='ATTACHMENT_ADD',
+                user=request.user,
+                details={'filename': piece.nom_fichier, 'type': 'SCAN'}
+            )
+
             messages.success(request, 'Scanned document uploaded successfully!')
             return redirect('dossier_detail', dossier_id=dossier.id)
     

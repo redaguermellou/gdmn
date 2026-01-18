@@ -1,34 +1,47 @@
 {% extends 'base.html' %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4>Ajouter une pièce jointe - Dossier #{{ dossier.reference }}</h4>
+    <div class="col-md-7 col-lg-6">
+        <div class="card-modern">
+            <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                <h4 class="mb-0 fw-bold header-title text-center">
+                    <div class="mb-2"><i class="fas fa-cloud-upload-alt fa-2x text-primary"></i></div>
+                    Ajouter une pièce jointe
+                    <span class="d-block text-muted small fw-normal mt-1">Dossier #{{ dossier.reference }}</span>
+                </h4>
             </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.type.id_for_label }}" class="form-label">Type de document</label>
+
+                    <div class="mb-4">
+                        <label for="{{ form.type.id_for_label }}"
+                            class="form-label text-sm fw-bold text-muted text-uppercase">Type de document</label>
                         {{ form.type }}
                     </div>
-                    <div class="mb-3">
-                        <label for="{{ form.nom_fichier.id_for_label }}" class="form-label">Nom du document</label>
+
+                    <div class="mb-4">
+                        <label for="{{ form.nom_fichier.id_for_label }}"
+                            class="form-label text-sm fw-bold text-muted text-uppercase">Nom du document</label>
                         {{ form.nom_fichier }}
                     </div>
-                    <div class="mb-3">
-                        <label for="{{ form.chemin_storage.id_for_label }}" class="form-label">Fichier</label>
+
+                    <div class="mb-4">
+                        <label for="{{ form.chemin_storage.id_for_label }}"
+                            class="form-label text-sm fw-bold text-muted text-uppercase">Fichier</label>
                         {{ form.chemin_storage }}
+                        <div class="form-text small">Formats acceptés : PDF, JPG, PNG</div>
                     </div>
-                   
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
+
+                    <div class="d-grid gap-3 mt-5">
+                        <button type="submit" class="btn btn-modern-primary py-3 fw-bold rounded-pill shadow-sm">
                             <i class="fas fa-upload me-2"></i> Envoyer le document
                         </button>
-                        <a href="{% url 'dossier_detail' dossier.id %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i> Annuler
+                        <a href="{% url 'dossier_detail' dossier.id %}"
+                            class="btn btn-light py-2 rounded-pill fw-medium text-muted">
+                            <i class="fas fa-arrow-left me-2"></i> Annuler
                         </a>
                     </div>
                 </form>

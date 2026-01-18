@@ -3,80 +3,80 @@
 {% load static %}
 
 {% block content %}
-<div class="medical-login-container bg-light">
-    <div class="row justify-content-center py-5">
-        <div class="col-md-6 col-lg-5">
-            <div class="card medical-login-card border-0 shadow-sm">
-                <div class="card-header medical-login-header bg-white border-0 pt-4">
-                    <div class="text-center mb-3">
-                        <img src="{% static 'images/Logo-Newrest.svg.png' %}" alt="Medical Icon" width="48" class="mb-3">
-                        <h2 class="h4 text-dark">Medical Portal Access</h2>
-                        <p class="text-muted small mt-2">Enter your credentials to continue</p>
+<div class="login-page-wrapper">
+    <div class="row justify-content-center align-items-center h-100">
+        <div class="col-md-9 col-lg-7 col-xl-5">
+            <!-- Modern Card -->
+            <div class="card-modern overflow-hidden position-relative animate-up">
+                <!-- Decorative Header -->
+                <div class="login-header text-center p-5 pb-0">
+                    <div class="brand-logo mb-4">
+                        <img src="{% static 'images/Logo-Newrest.svg.png' %}" alt="Newrest Logo" class="img-fluid"
+                            style="height: 56px;">
                     </div>
+                    <h4 class="fw-bold mb-2" style="color: var(--text-main);">Bienvenue</h4>
+                    <p class="text-muted">Connectez-vous à votre espace médical sécurisé</p>
                 </div>
-                
-                <div class="card-body px-4 py-4">
+
+                <div class="card-body p-5 pt-4">
                     <form method="POST" action="{% url 'login' %}" id="loginForm" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        
-                        <!-- Email Field -->
-                        <div class="mb-3">
-                            <label for="username" class="form-label small text-muted">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white">
-                                    <i class="fas fa-envelope text-muted"></i>
-                                </span>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="username"
-                                       name="username"
-                                       required
-                                       autofocus
-                                       placeholder="your.email@example.com">
+
+                        <div class="mb-4">
+                            <label for="username"
+                                class="form-label text-xs fw-bold text-uppercase text-muted letter-spacing-wide">Email /
+                                Identifiant</label>
+                            <div class="input-group-modern">
+                                <span class="input-icon"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control-modern" id="username" name="username" required
+                                    placeholder="nom@exemple.com" autofocus>
                             </div>
                         </div>
-                        
-                        <!-- Password Field -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label small text-muted">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white">
-                                    <i class="fas fa-lock text-muted"></i>
-                                </span>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password"
-                                       name="password"
-                                       required
-                                       placeholder="••••••••">
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label for="password"
+                                    class="form-label text-xs fw-bold text-uppercase text-muted letter-spacing-wide mb-0">Mot
+                                    de passe</label>
+                                <a href="{% url 'password_reset' %}"
+                                    class="text-xs text-primary text-decoration-none fw-semibold transition-hover">Mot
+                                    de passe oublié ?</a>
+                            </div>
+                            <div class="input-group-modern">
+                                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control-modern" id="password" name="password"
+                                    required placeholder="••••••••">
                             </div>
                         </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rememberMe">
-                                <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
-                            </div>
-                            <script>console.log("%c🔍 Psst... You found the secret!", "color: red; font-size: 20px;");console.log("%c mo.re.gu","font-size: 20px;");</script>
-                            <a href="{% url 'password_reset' %}" class="small text-decoration-none">Forgot password?</a>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label text-sm text-muted" for="rememberMe">Se souvenir de
+                                moi</label>
                         </div>
-                        
-                        <button type="submit" class="btn btn-success w-100 py-2 mb-3 fw-medium">
-                            <i class="fas fa-sign-in-alt me-2"></i> Login
+
+                        <button type="submit" class="btn btn-modern-primary w-100 py-3 btn-lg rounded-pill shadow-lg">
+                            <span class="d-flex align-items-center justify-content-center gap-2">
+                                Se connecter <i class="fas fa-arrow-right"></i>
+                            </span>
                         </button>
-                        
+
                         {% if form.errors %}
-                            <div class="alert alert-danger alert-dismissible fade show mt-3 small" role="alert">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                Invalid username or password. Please try again.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="alert alert-danger-soft mt-4 d-flex align-items-start gap-3 fade show" role="alert">
+                            <i class="fas fa-exclamation-circle text-danger mt-1"></i>
+                            <div class="text-sm text-danger">
+                                <strong>Erreur de connexion</strong><br>
+                                Identifiant ou mot de passe incorrect.
                             </div>
+                        </div>
                         {% endif %}
                     </form>
                 </div>
-                
-                <div class="card-footer medical-login-footer bg-white border-0 text-center pb-4">
-                    <p class="small text-muted mb-0">Secure medical portal. All rights reserved.</p>
+
+                <!-- Decorative Footer in Card -->
+                <div class="card-footer-decorative text-center py-3">
+                    <p class="mb-0 text-xs text-muted">© {% now "Y" %} Portail Médical Newrest &middot; Tous droits
+                        réservés</p>
                 </div>
             </div>
         </div>
@@ -84,26 +84,164 @@
 </div>
 
 <style>
-.medical-login-container {
-    min-height: 100vh;
-}
-.medical-login-card {
-    border-radius: 8px;
-}
+    /* Scoped styles */
+    .login-page-wrapper {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .letter-spacing-wide {
+        letter-spacing: 0.05em;
+    }
+
+    .input-group-modern {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        z-index: 5;
+        transition: var(--transition-base);
+        font-size: 1.1rem;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 14px 18px 14px 50px;
+        border: 2px solid transparent;
+        background-color: var(--bg-soft);
+        border-radius: var(--radius-lg);
+        font-size: 1rem;
+        transition: var(--transition-base);
+        color: var(--text-main);
+    }
+
+    .form-control-modern:hover {
+        background-color: #e2e8f0;
+    }
+
+    .form-control-modern:focus {
+        background-color: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        outline: none;
+    }
+
+    .form-control-modern:focus+.input-icon,
+    .input-group-modern:focus-within .input-icon {
+        color: var(--primary);
+    }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+
+    .text-sm {
+        font-size: 0.875rem;
+    }
+
+    .transition-hover {
+        transition: color 0.2s;
+    }
+
+    .transition-hover:hover {
+        color: var(--primary-dark) !important;
+        text-decoration: underline !important;
+    }
+
+    .alert-danger-soft {
+        background-color: #fef2f2;
+        border: 1px solid #fee2e2;
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    @keyframes shake {
+
+        10%,
+        90% {
+            transform: translate3d(-1px, 0, 0);
+        }
+
+        20%,
+        80% {
+            transform: translate3d(2px, 0, 0);
+        }
+
+        30%,
+        50%,
+        70% {
+            transform: translate3d(-4px, 0, 0);
+        }
+
+        40%,
+        60% {
+            transform: translate3d(4px, 0, 0);
+        }
+    }
+
+    .card-footer-decorative {
+        background-color: var(--bg-soft);
+        border-top: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    /* Enhance checkbox */
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.1em;
+        border: 2px solid #cbd5e1;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
 </style>
 
 <script>
-// Simple password visibility toggle (optional)
-document.addEventListener('DOMContentLoaded', function() {
-    // Add CSRF verification
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        if (!document.querySelector('[name=csrfmiddlewaretoken]')?.value) {
-            e.preventDefault();
-            alert('Security verification failed. Please refresh the page.');
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function (e) {
+                if (!document.querySelector('[name=csrfmiddlewaretoken]')?.value) {
+                    e.preventDefault();
+                    alert('Erreur de sécurité. Veuillez rafraîchir la page.');
+                    return;
+                }
+
+                // Add loading state
+                const btn = this.querySelector('button[type="submit"]');
+                const originalHtml = btn.innerHTML;
+                btn.classList.add('disabled');
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Connexion...';
+            });
         }
     });
-});
-console.log("%c🔍 Psst... You found the secret!", "color: red; font-size: 20px;");
-console.log("%c mo.re.gu","font-size: 20px;");
 </script>
 {% endblock %}

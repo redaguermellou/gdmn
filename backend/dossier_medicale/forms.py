@@ -8,10 +8,13 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from .models import DossierMedical, User
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
 class DossierForm(forms.ModelForm):
     attachments = forms.FileField(
         required=False,
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        widget=MultipleFileInput(attrs={'multiple': True}),
         help_text="You can upload multiple files"
     )
     

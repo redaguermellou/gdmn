@@ -7,21 +7,14 @@
     <div class="row align-items-center mb-5 animate-slide-down">
         <div class="col-md-6">
             <h2 class="fw-bold mb-1" style="color: var(--text-main);">
-                Bonjour, {{ request.user.first_name|default:"Administrateur" }} <span class="wave">👋</span>
+                Bonjour, {{ request.user.first_name|default:"Agent" }} <span class="wave">👋</span>
             </h2>
-            <p class="text-muted mb-0">Voici un aperçu des dossiers médicaux récents.</p>
+            <p class="text-muted mb-0">Gestion des dossiers de votre département.</p>
         </div>
         <div class="col-md-6 text-md-end mt-3 mt-md-0">
-            {% if request.user.role.name in 'AGENT,ADMIN,CONTROLLER' %}
             <a href="{% url 'create_dossier' %}" class="btn btn-modern-primary shadow-lg hover-lift">
                 <i class="fas fa-plus-circle me-2"></i>Nouveau Dossier
             </a>
-            {% endif %}
-            {% if request.user.role.name in 'ADMIN,CONTROLLER' %}
-            <a href="{% url 'audit_log' %}" class="btn btn-white shadow-sm hover-lift ms-2 text-dark">
-                <i class="fas fa-history me-2 text-primary"></i>Journal d'audit
-            </a>
-            {% endif %}
         </div>
     </div>
 
@@ -32,8 +25,7 @@
                 <div class="input-group-modern border-0 bg-transparent">
                     <span class="input-icon ps-3"><i class="fas fa-search text-muted"></i></span>
                     <input type="text" name="q" class="form-control border-0 bg-transparent ps-5 py-2"
-                        placeholder="Rechercher par référence, employé, ou département..."
-                        value="{{ search_query|default:'' }}">
+                        placeholder="Rechercher par référence ou employé..." value="{{ search_query|default:'' }}">
                 </div>
             </div>
             <div class="col-md-2 text-end">
@@ -103,27 +95,17 @@
                         </a>
 
                         <div class="action-buttons opacity-0 group-hover-visible transition-all">
-                            {% if request.user.role.name in 'AGENT,ADMIN,CONTROLLER' and dossier.status != 'APPROVED' %}
+                            {% if dossier.status != 'APPROVED' %}
                             <a href="{% url 'edit_dossier' dossier.id %}"
                                 class="btn-icon btn-icon-sm text-secondary hover-primary" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% endif %}
 
-                            {% if request.user.role.name in 'ADMIN,CONTROLLER' %}
-                            <a href="{% url 'generate_report' dossier.id %}"
-                                class="btn-icon btn-icon-sm text-info hover-info" title="Rapport PDF">
-                                <i class="fas fa-file-pdf"></i>
+                            <a href="{% url 'upload_document' dossier.id %}"
+                                class="btn-icon btn-icon-sm text-info hover-info" title="Upload">
+                                <i class="fas fa-cloud-upload-alt"></i>
                             </a>
-                            <form method="post" action="{% url 'dossier_delete' dossier.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit"
-                                    class="btn-icon btn-icon-sm text-danger hover-danger border-0 bg-transparent"
-                                    onclick="return confirm('Confirmer la suppression ?');" title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -186,6 +168,7 @@
 </div>
 
 <style>
+    /* Reuse styles from list_admin.html or base.html */
     .animate-slide-down {
         animation: slideDown 0.5s ease-out;
     }
@@ -230,16 +213,6 @@
         animation: name 2s infinite;
         display: inline-block;
         transform-origin: 70% 70%;
-    }
-
-    .btn-white {
-        background: white;
-        border: 1px solid #e2e8f0;
-    }
-
-    .btn-white:hover {
-        background: #f8fafc;
-        transform: translateY(-2px);
     }
 
     .hover-lift {
@@ -312,7 +285,7 @@
         visibility: visible !important;
     }
 
-    /* Removed hover effect to keep buttons always visible */
+    /* Removed hover effect */
     /* .group:hover .group-hover-visible { ... } */
 
     .btn-icon {
@@ -330,14 +303,14 @@
         background-color: #f1f5f9;
     }
 
-    .hover-danger:hover {
-        color: #ef4444 !important;
-        background-color: #fef2f2 !important;
-    }
-
     .hover-primary:hover {
         color: #0ea5e9 !important;
         background-color: #f0f9ff !important;
+    }
+
+    .hover-info:hover {
+        color: #3b82f6 !important;
+        background-color: #eff6ff !important;
     }
 
     .pagination-modern .page-link {
