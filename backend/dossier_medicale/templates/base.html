@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -15,296 +16,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <style>
-        :root {
-            /* Modern Color Palette - Medical & Trust */
-            --primary: #0ea5e9;
-            /* Sky blue */
-            --primary-dark: #0284c7;
-            --secondary: #64748b;
-            /* Slate */
-            --accent: #6366f1;
-            /* Indigo */
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
-            /* Functional Colors */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
-
-            /* Backgrounds & Surfaces */
-            --bg-body: #f1f5f9;
-            --bg-surface: #ffffff;
-            --bg-soft: #f8fafc;
-
-            /* Text Levels */
-            --text-main: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --text-light: #ffffff;
-
-            /* Glassmorphism & Effects */
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --glass-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
-            --nav-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-
-            /* Border Radius */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --radius-full: 9999px;
-
-            /* Transitions */
-            --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-            /* Legacy Compatibility */
-            --primary-blue: var(--primary);
-            --secondary-blue: var(--primary-dark);
-            --accent-blue: var(--accent);
-            --success-green: var(--success);
-            --warning-yellow: var(--warning);
-            --danger-red: var(--danger);
-            --light-bg: var(--bg-soft);
-            --text-dark: var(--text-main);
-        }
-
-        body {
-            background-color: var(--bg-body);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            padding-top: 76px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        /* Modern Glassmorphic Navbar */
-        .navbar {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: var(--nav-shadow);
-            padding: 0.75rem 0;
-            transition: var(--transition-base);
-        }
-
-        .navbar.scrolled {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            background: rgba(255, 255, 255, 0.95);
-        }
-
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.35rem;
-            color: var(--primary-dark) !important;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.025em;
-        }
-
-        .navbar-brand i {
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.2));
-        }
-
-        .nav-link {
-            font-weight: 600;
-            color: var(--text-secondary) !important;
-            transition: var(--transition-base);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-        }
-
-        .nav-link:hover {
-            color: var(--primary) !important;
-            background-color: var(--bg-soft);
-        }
-
-        /* Profile Dropdown */
-        .user-dropdown .dropdown-toggle {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 6px 6px 6px 16px;
-            border-radius: var(--radius-full);
-            background-color: var(--bg-surface);
-            border: 1px solid #e2e8f0;
-            transition: var(--transition-base);
-            color: var(--text-main);
-            text-decoration: none;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-
-        .user-dropdown .dropdown-toggle:hover,
-        .user-dropdown .dropdown-toggle:focus {
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-right: 4px;
-        }
-
-        .dropdown-menu {
-            border: none;
-            box-shadow: var(--glass-shadow);
-            border-radius: var(--radius-xl);
-            padding: 8px;
-            margin-top: 12px;
-            animation: slideIn 0.2s ease-out;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .dropdown-item {
-            border-radius: var(--radius-md);
-            padding: 10px 16px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: var(--transition-base);
-        }
-
-        .dropdown-item:hover {
-            background-color: var(--bg-soft);
-            color: var(--primary);
-            transform: translateX(4px);
-        }
-
-        .dropdown-item i {
-            width: 18px;
-            color: var(--text-muted);
-            transition: var(--transition-base);
-        }
-
-        .dropdown-item:hover i {
-            color: var(--primary);
-        }
-
-        .dropdown-item.text-danger:hover {
-            background-color: #fef2f2;
-            color: var(--danger);
-        }
-
-        .dropdown-item.text-danger i {
-            color: var(--danger);
-        }
-
-        .dropdown-header {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            font-weight: 700;
-            padding: 8px 16px;
-        }
-
-        .content-wrapper {
-            flex: 1;
-            padding: 2rem 0;
-            position: relative;
-        }
-
-        /* Card & UI Utils */
-        .card-modern {
-            background: var(--bg-surface);
-            border-radius: var(--radius-xl);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            transition: var(--transition-base);
-        }
-
-        .card-modern:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            transform: translateY(-2px);
-        }
-
-        .btn-modern-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
-            transition: var(--transition-base);
-        }
-
-        .btn-modern-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3);
-            color: white;
-        }
-
-        .footer {
-            background: var(--bg-surface);
-            padding: 2rem 0;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid #e2e8f0;
-            margin-top: auto;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
 </head>
 
 <body>
@@ -323,10 +37,20 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <!-- Main Navigation Links (Can be added here) -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!-- Example Link -->
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
-                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dossier_list' %}active{% endif %}"
+                            href="{% url 'dossier_list' %}">
+                            <i class="fas fa-columns me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    {% if request.user.role.name in 'ADMIN,CONTROLLER' %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}"
+                            href="{% url 'audit_log' %}">
+                            <i class="fas fa-history me-1"></i> Journal d'audit
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
 
                 <!-- Right-aligned user info -->
@@ -383,6 +107,24 @@
 
 
             <main class="main-container">
+                <!-- Global Messages -->
+                {% if messages %}
+                <div class="messages-container animate-fade-in mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show border-0 shadow-sm mb-3"
+                        role="alert"
+                        style="border-left: 4px solid var(--{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'primary' }}{% endif %}) !important;">
+                        <div class="d-flex align-items-center">
+                            <i
+                                class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-3"></i>
+                            <div>{{ message }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 {% block content %}
                 <!-- Content will be injected here -->
                 {% endblock %}
@@ -420,6 +162,15 @@
             // Check on load and resize
             handleMobileView();
             window.addEventListener('resize', handleMobileView);
+
+            // Auto-dismiss messages
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000); // 5 seconds
+            });
         });
     </script>
     {% block scripts %}{% endblock %}

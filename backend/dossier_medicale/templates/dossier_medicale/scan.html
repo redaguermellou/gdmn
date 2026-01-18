@@ -4,39 +4,52 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
-                <h4>Scanner un document - Dossier #{{ dossier.reference }}</h4>
+            <div class="card-header bg-transparent border-0 pt-5 pb-2 px-4 text-center">
+                <div class="icon-box bg-blue-soft text-primary mx-auto mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-camera fa-lg"></i>
+                </div>
+                <h3 class="fw-800 mb-1" style="color: var(--text-main);">Scanner un document</h3>
+                <p class="text-muted small">Dossier #{{ dossier.reference }}</p>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form id="scanForm" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-4 text-center">
-                        <video id="scanner" width="100%" autoplay playsinline style="border: 2px dashed #ccc; display: none;"></video>
-                        <canvas id="canvas" style="display: none;"></canvas>
-                        <div id="scanArea" class="p-4 bg-light text-center" style="border: 2px dashed #ccc;">
-                            <i class="fas fa-camera fa-4x mb-3 text-muted"></i>
-                            <p class="text-muted">Prêt à scanner</p>
+                        <div class="video-container position-relative overflow-hidden rounded-lg mb-3">
+                            <video id="scanner" width="100%" autoplay playsinline
+                                style="border: none; display: none;"></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                            <div id="scanArea" class="p-5 bg-soft border-dashed rounded-lg">
+                                <i class="fas fa-camera fa-3x mb-3 text-muted opacity-50"></i>
+                                <p class="text-muted small mb-0">La caméra s'affichera ici</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nom du document</label>
-                        <input type="text" name="document_name" class="form-control" placeholder="Ex: Ordonnance du 15/06/2023" required>
+
+                    <div class="mb-4">
+                        <label class="form-label text-xs text-uppercase fw-800 text-muted letter-spacing-wide">Nom du
+                            document</label>
+                        <input type="text" name="document_name" class="form-control-modern w-100"
+                            placeholder="Ex: Rapport d'expertise" required>
                     </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="button" id="startScan" class="btn btn-primary">
-                            <i class="fas fa-camera me-2"></i> Démarrer le scan
+
+                    <div class="d-grid gap-3">
+                        <button type="button" id="startScan" class="btn btn-modern-primary py-3 rounded-pill">
+                            <i class="fas fa-video me-2"></i> Activer la caméra
                         </button>
-                        <button type="button" id="capture" class="btn btn-success" style="display: none;">
-                            <i class="fas fa-camera me-2"></i> Capturer
+                        <button type="button" id="capture" class="btn btn-success py-3 rounded-pill"
+                            style="display: none;">
+                            <i class="fas fa-camera me-2"></i> Capturer l'image
                         </button>
-                        <input type="file" id="fileInput" name="scanned_doc" accept="image/*" capture="environment" style="display: none;">
-                        <button type="submit" id="uploadBtn" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-upload me-2"></i> Envoyer le scan
+                        <input type="file" id="fileInput" name="scanned_doc" accept="image/*" capture="environment"
+                            style="display: none;">
+                        <button type="submit" id="uploadBtn" class="btn btn-primary py-3 rounded-pill"
+                            style="display: none;">
+                            <i class="fas fa-check-circle me-2"></i> Valider et envoyer
                         </button>
-                        <a href="{% url 'dossier_detail' dossier.id %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i> Annuler
+                        <a href="{% url 'dossier_detail' dossier.id %}"
+                            class="btn btn-link text-muted text-decoration-none fw-600">
+                            Annuler
                         </a>
                     </div>
                 </form>
@@ -47,64 +60,64 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const scanner = document.getElementById('scanner');
-    const canvas = document.getElementById('canvas');
-    const scanArea = document.getElementById('scanArea');
-    const startBtn = document.getElementById('startScan');
-    const captureBtn = document.getElementById('capture');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInput = document.getElementById('fileInput');
+    document.addEventListener('DOMContentLoaded', function () {
+        const scanner = document.getElementById('scanner');
+        const canvas = document.getElementById('canvas');
+        const scanArea = document.getElementById('scanArea');
+        const startBtn = document.getElementById('startScan');
+        const captureBtn = document.getElementById('capture');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
 
-    // Try to access camera on all devices
-    startBtn.addEventListener('click', async function() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            });
-            scanner.srcObject = stream;
-            scanner.style.display = 'block';
-            scanArea.style.display = 'none';
-            startBtn.style.display = 'none';
-            captureBtn.style.display = 'block';
-        } catch (err) {
-            // Fallback: open file input if camera not available
-            fileInput.click();
-        }
+        // Try to access camera on all devices
+        startBtn.addEventListener('click', async function () {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                scanner.srcObject = stream;
+                scanner.style.display = 'block';
+                scanArea.style.display = 'none';
+                startBtn.style.display = 'none';
+                captureBtn.style.display = 'block';
+            } catch (err) {
+                // Fallback: open file input if camera not available
+                fileInput.click();
+            }
+        });
+
+        // Capture image from video
+        captureBtn.addEventListener('click', function () {
+            canvas.width = scanner.videoWidth;
+            canvas.height = scanner.videoHeight;
+            canvas.getContext('2d').drawImage(scanner, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to blob and simulate file input
+            canvas.toBlob(function (blob) {
+                const file = new File([blob], 'scan_' + new Date().toISOString().replace(/[:.]/g, '-') + '.jpg', {
+                    type: 'image/jpeg'
+                });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                uploadBtn.style.display = 'block';
+                captureBtn.style.display = 'none';
+            }, 'image/jpeg', 0.9);
+        });
+
+        // If user selects a file manually, show upload button
+        fileInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                uploadBtn.style.display = 'block';
+                startBtn.style.display = 'none';
+                scanArea.style.display = 'none';
+            }
+        });
     });
-
-    // Capture image from video
-    captureBtn.addEventListener('click', function() {
-        canvas.width = scanner.videoWidth;
-        canvas.height = scanner.videoHeight;
-        canvas.getContext('2d').drawImage(scanner, 0, 0, canvas.width, canvas.height);
-
-        // Convert canvas to blob and simulate file input
-        canvas.toBlob(function(blob) {
-            const file = new File([blob], 'scan_' + new Date().toISOString().replace(/[:.]/g, '-') + '.jpg', {
-                type: 'image/jpeg'
-            });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-            uploadBtn.style.display = 'block';
-            captureBtn.style.display = 'none';
-        }, 'image/jpeg', 0.9);
-    });
-
-    // If user selects a file manually, show upload button
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            uploadBtn.style.display = 'block';
-            startBtn.style.display = 'none';
-            scanArea.style.display = 'none';
-        }
-    });
-});
 </script>
 {% endblock %}
 {% endblock %}

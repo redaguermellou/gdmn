@@ -1,428 +1,204 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load django_bootstrap5 %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card-modern">
-                <div class="card-header bg-transparent border-0 py-4 px-4">
-                    <h3 class="mb-0 fw-bold header-title">
-                        <i class="fas fa-plus-circle me-2 text-primary"></i>Create New Medical Dossier
-                    </h3>
+<div class="row justify-content-center animate-fade-up">
+    <div class="col-lg-10">
+        <div class="card-modern overflow-hidden">
+            <div class="card-header bg-white border-0 pt-5 pb-2 px-5 text-center">
+                <div class="icon-box bg-blue-soft text-primary mx-auto mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-file-medical fa-lg"></i>
                 </div>
+                <h3 class="fw-800 mb-1" style="color: var(--text-main);">{{ title }}</h3>
+                <p class="text-muted">Veuillez remplir les informations ci-dessous pour créer un nouveau dossier.</p>
+            </div>
 
-                <div class="card-body">
-                    {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
+            <div class="card-body p-5">
 
-                    <form method="post" enctype="multipart/form-data" novalidate>
-                        {% csrf_token %}
+                <form method="post" enctype="multipart/form-data" id="dossierForm" novalidate class="needs-validation">
+                    {% csrf_token %}
 
-                        <!-- Basic Information Section -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Basic Information</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="id_employer" class="form-label">Employee</label>
-                                    {{ form.employer }}
-                                    {% if form.employer.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.employer.errors.0 }}
+                    <div class="row g-4">
+                        <!-- Left Column: Form Fields -->
+                        <div class="col-lg-8">
+                            <div class="section-group mb-5">
+                                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                    <span class="step-number me-2">1</span> Informations Générales
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-600">Employé</label>
+                                        {{ form.employer }}
                                     </div>
-                                    {% endif %}
-                                </div>
-
-
-                                <!-- Add status field -->
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    {{ form.status }}
-                                    {% if form.status.errors %}
-                                    <div class="error">{{ form.status.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label for="id_department" class="form-label">Department</label>
-                                    {{ form.department }}
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label for="id_doctor" class="form-label">Doctor</label>
-                                    {{ form.doctor }}
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label for="id_start_date" class="form-label">Start Date</label>
-                                    {{ form.start_date }}
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label for="id_end_date" class="form-label">End Date (Optional)</label>
-                                    {{ form.end_date }}
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label for="id_priority" class="form-label">Priority</label>
-                                    {{ form.priority }}
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="form-check mt-4 pt-2">
-                                        {{ form.is_confidential }}
-                                        <label class="form-check-label" for="id_is_confidential">
-                                            Confidential Dossier
-                                        </label>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-600">Département</label>
+                                        {{ form.department }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-600">Médecin</label>
+                                        {{ form.doctor }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-600">Priorité</label>
+                                        {{ form.priority }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-600">Date</label>
+                                        {{ form.start_date }}
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Medical Information Section -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Medical Information</h5>
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="id_diagnosis" class="form-label">Diagnosis</label>
+                            <div class="section-group mb-4">
+                                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                    <span class="step-number me-2">2</span> Détails Médicaux
+                                </h5>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Diagnostic</label>
                                     {{ form.diagnosis }}
                                 </div>
-
-                                <div class="col-12">
-                                    <label for="id_treatment_plan" class="form-label">Treatment Plan</label>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Plan de Traitement</label>
                                     {{ form.treatment_plan }}
                                 </div>
-
-                                <div class="col-12">
-                                    <label for="id_reason" class="form-label">Reason (Optional)</label>
-                                    {{ form.reason }}
-                                </div>
-
-                                <div class="col-12">
-                                    <label for="id_comments" class="form-label">Additional Comments (Optional)</label>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Commentaires (Optionnel)</label>
                                     {{ form.comments }}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Attachments Section -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Attachments</h5>
-                            <div class="mb-3">
-                                <label for="id_attachments" class="form-label">Upload Files</label>
-                                <input type="file" name="attachments" multiple class="form-control" id="id_attachments">
-                                <div class="form-text">You can upload multiple files (scans, prescriptions, reports,
-                                    etc.)</div>
+                        <!-- Right Column: Attachments & Info -->
+                        <div class="col-lg-4">
+                            <div class="sticky-top" style="top: 100px; z-index: 10;">
+                                <div class="card-modern bg-soft p-4 border-0 mb-4">
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                                        <i class="fas fa-paperclip text-primary me-2"></i> Pièces Jointes
+                                    </h5>
+
+                                    <div class="upload-zone p-4 text-center border-dashed rounded-lg mb-3"
+                                        id="dropZone">
+                                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                        <p class="small text-muted mb-0">Cliquez ou glissez vos fichiers ici</p>
+                                        <input type="file" name="attachments" id="attachmentsInput" multiple
+                                            class="d-none">
+                                        <button type="button" class="btn btn-sm btn-light mt-2 fw-medium"
+                                            onclick="document.getElementById('attachmentsInput').click()">
+                                            Parcourir
+                                        </button>
+                                    </div>
+
+                                    <div id="fileList" class="file-list">
+                                        <!-- Files will be listed here -->
+                                        <p class="text-center text-muted small my-3" id="noFilesMsg">Aucun fichier
+                                            sélectionné</p>
+                                    </div>
+                                </div>
+
+                                <div class="card-modern bg-primary text-white p-4 border-0">
+                                    <h6 class="fw-800 mb-2">Besoin d'aide ?</h6>
+                                    <p class="small opacity-75 mb-0">Assurez-vous de joindre tous les documents
+                                        nécessaires pour validation.</p>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'dossier_list' %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-2"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i> Submit Dossier
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <hr class="my-5 opacity-10">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'dossier_list' %}" class="btn btn-link text-muted text-decoration-none fw-600">
+                            <i class="fas fa-times me-2"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-modern-primary px-5 py-3 rounded-pill shadow-lg"
+                            id="submitBtn">
+                            <i class="fas fa-check-circle me-2"></i> Créer le dossier
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // Client-side validation and date picker enhancement
-    document.addEventListener('DOMContentLoaded', function () {
-        // Enable Bootstrap validation
-        const forms = document.querySelectorAll('.needs-validation');
+<!-- Core visual styles are now handled by main.css -->
 
-        Array.from(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
 
-                form.classList.add('was-validated');
-            }, false);
-        });
-
-        // Initialize date pickers
-        const dateInputs = document.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-            if (!input.value) {
-                const today = new Date().toISOString().split('T')[0];
-                input.value = today;
-            }
-        });
-    });
-</script>
-{% endblock %}
-
-{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('attachmentsInput');
+        const fileList = document.getElementById('fileList');
+        const noFilesMsg = document.getElementById('noFilesMsg');
+        const dropZone = document.getElementById('dropZone');
+
         let selectedFiles = [];
 
-        // Handle scan button click
-        document.querySelectorAll('#scanDocumentBtn, #quickScanBtn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const scanModal = new bootstrap.Modal(document.getElementById('scanModal'));
-                scanModal.show();
-            });
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
         });
 
-        // Handle upload button click
-        document.querySelectorAll('#uploadDocumentBtn, #quickUploadBtn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.getElementById('fileInput').click();
-            });
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
         });
 
-        // Handle file selection
-        document.getElementById('fileInput').addEventListener('change', function () {
-            if (this.files.length > 0) {
-                Array.from(this.files).forEach(file => {
-                    selectedFiles.push(file);
-                    addDocumentToPreview(file, 'upload');
-                });
-                updateFileInput();
-            }
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
         });
 
-        // Handle scan capture
-        document.getElementById('scanInput').addEventListener('change', function () {
-            if (this.files.length > 0) {
-                selectedFiles.push(this.files[0]);
-                addDocumentToPreview(this.files[0], 'scan');
-                updateFileInput();
-                const scanModal = bootstrap.Modal.getInstance(document.getElementById('scanModal'));
-                scanModal.hide();
-            }
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
         });
 
-        // Start scan button
-        document.getElementById('startScanBtn').addEventListener('click', function () {
-            document.getElementById('scanInput').click();
-        });
-
-        // Update the actual file input that will be submitted
         function updateFileInput() {
             const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(file => dataTransfer.items.add(file));
-            document.getElementById('attachmentsInput').files = dataTransfer.files;
+            selectedFiles.forEach(item => {
+                dataTransfer.items.add(item.file);
+            });
+            fileInput.files = dataTransfer.files;
         }
 
-        // Function to add document to preview
-        function addDocumentToPreview(file, type) {
-            const previewDiv = document.querySelector('.document-preview');
-            const fileSize = (file.size / 1024).toFixed(2); // KB
+        function handleFiles(files) {
+            if (files.length > 0) {
+                noFilesMsg.style.display = 'none';
+                Array.from(files).forEach(file => {
+                    const fileId = Date.now() + Math.random();
+                    selectedFiles.push({ id: fileId, file: file });
 
-            // Remove the "no documents" message if it exists
-            const noDocsMsg = previewDiv.querySelector('p.text-muted');
-            if (noDocsMsg) {
-                noDocsMsg.remove();
-            }
-
-            // Create document card
-            const docCard = document.createElement('div');
-            docCard.className = 'card document-card mb-2 border-0 shadow-xs';
-            docCard.innerHTML = `
-            <div class="card-body p-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-${type === 'scan' ? 'info' : 'primary'}-subtle p-1 rounded me-2">
-                            <i class="fas fa-${type === 'scan' ? 'image' : 'file-pdf'} text-${type === 'scan' ? 'info' : 'primary'}"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0 small text-truncate" style="max-width: 200px;">${file.name}</h6>
-                            <small class="text-muted">${fileSize} KB</small>
-                        </div>
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                    <div class="d-flex align-items-center overflow-hidden">
+                        <i class="fas fa-file-alt text-primary me-2"></i>
+                        <span class="small text-truncate" style="max-width: 150px;">${file.name}</span>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger rounded-circle p-0 remove-doc" style="width:20px;height:20px;line-height:1;">
-                        <i class="fas fa-times" style="font-size:0.6rem;"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-
-            // Add to preview
-            previewDiv.appendChild(docCard);
-
-            // Handle remove button
-            docCard.querySelector('.remove-doc').addEventListener('click', function () {
-                const index = Array.from(document.querySelectorAll('.document-card')).indexOf(docCard);
-                if (index > -1) {
-                    selectedFiles.splice(index, 1);
-                    updateFileInput();
-                }
-                docCard.remove();
-
-                // Show empty message if no documents left
-                if (previewDiv.children.length === 0) {
-                    previewDiv.innerHTML = `
-                    <p class="text-muted mb-0 text-center py-3 small">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Aucun document ajouté
-                    </p>`;
-                }
-            });
+                    <i class="fas fa-times-circle btn-remove-file" onclick="removeFile(${fileId}, this.parentElement)"></i>
+                `;
+                    fileList.appendChild(fileItem);
+                });
+                updateFileInput();
+            }
         }
 
-        // Form validation before submission
-        document.getElementById('dossierForm').addEventListener('submit', function (e) {
-            const requiredFields = ['employer', 'department', 'doctor', 'diagnosis', 'treatment_plan'];
-            let isValid = true;
-
-            // Clear previous error indicators
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-
-            // Validate required fields
-            requiredFields.forEach(fieldId => {
-                const field = document.getElementById(`id_${fieldId}`);
-                if (field && !field.value.trim()) {
-                    isValid = false;
-                    field.classList.add('is-invalid');
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'invalid-feedback d-block small';
-                    errorDiv.textContent = 'Ce champ est obligatoire';
-                    field.parentNode.appendChild(errorDiv);
-                }
-            });
-
-            // Validate dates if both are present
-            const startDate = document.getElementById('id_start_date');
-            const endDate = document.getElementById('id_end_date');
-
-            if (startDate.value && endDate.value && new Date(endDate.value) < new Date(startDate.value)) {
-                isValid = false;
-                endDate.classList.add('is-invalid');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'invalid-feedback d-block small';
-                errorDiv.textContent = 'La date de fin ne peut pas être avant la date de début';
-                endDate.parentNode.appendChild(errorDiv);
+        window.removeFile = function (id, element) {
+            selectedFiles = selectedFiles.filter(item => item.id !== id);
+            element.remove();
+            if (selectedFiles.length === 0) {
+                noFilesMsg.style.display = 'block';
             }
+            updateFileInput();
+        };
 
-            if (!isValid) {
-                e.preventDefault();
-                // Scroll to first error
-                document.querySelector('.is-invalid').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-
-                // Show error message
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-danger alert-dismissible fade show py-2 mb-3';
-                alertDiv.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <span>Veuillez corriger les erreurs dans le formulaire</span>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
-
-                const messagesContainer = document.querySelector('.card-body');
-                if (messagesContainer) {
-                    messagesContainer.insertBefore(alertDiv, messagesContainer.firstChild);
-                }
-            } else {
-                // Disable submit button to prevent double submission
-                const submitBtn = document.getElementById('submitBtn');
-                if (submitBtn) {
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enregistrement...';
-                    submitBtn.disabled = true;
-                }
-            }
+        // Form submission enhancement
+        const form = document.getElementById('dossierForm');
+        form.addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Création en cours...';
         });
     });
 </script>
-
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    }
-
-    .scanner-animation {
-        position: relative;
-        height: 2px;
-        background: var(--primary);
-        animation: scan 2s infinite linear;
-        box-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
-    }
-
-    @keyframes scan {
-        0% {
-            top: 0;
-            opacity: 0;
-        }
-
-        10% {
-            opacity: 1;
-        }
-
-        90% {
-            opacity: 1;
-        }
-
-        100% {
-            top: 100%;
-            opacity: 0;
-        }
-    }
-
-    .document-card {
-        transition: all 0.2s ease;
-        border-left: 3px solid var(--primary);
-        font-size: 0.8rem;
-        background-color: var(--bg-soft);
-    }
-
-    .shadow-xs {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-control,
-    .form-select {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.75rem;
-    }
-
-    textarea.form-control {
-        min-height: 80px;
-    }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .alert {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-    }
-
-    .is-invalid {
-        border-color: #dc3545 !important;
-    }
-
-    .invalid-feedback {
-        color: #dc3545;
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-
-    .text-truncate {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-</style>
 {% endblock %}

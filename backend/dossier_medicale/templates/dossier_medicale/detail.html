@@ -1,163 +1,165 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-
-
-<div class="container-fluid">
-    {% if dossiers %}
-        {% for dossier in dossiers %}
-        <!-- Your existing loop content -->
-        {% endfor %}
-    {% else %}
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            No dossiers found for this user.
+<div class="row justify-content-center animate-fade-up">
+    <div class="col-lg-10 col-xl-9">
+        <!-- Back Link -->
+        <div class="mb-4">
+            <a href="{% url 'dossier_list' %}" class="text-decoration-none text-muted small hover-primary fw-600">
+                <i class="fas fa-arrow-left me-2"></i> Retour à mes dossiers
+            </a>
         </div>
-    {% endif %}
-</div>
 
-<div class="container-fluid">
-    {% for dossier in dossiers %}
-    <div class="row g-4 mb-4 dossier-container">
-        <!-- Main Dossier Info -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h4 class="mb-0 text-primary">
-                        <i class="fas fa-folder-open me-2"></i>Dossier #{{ dossier.reference }}
-                    </h4>
-                    <span class="badge rounded-pill bg-{% if dossier.status == 'PENDING' %}warning{% elif dossier.status == 'APPROVED' %}success{% elif dossier.status == 'REJECTED' %}danger{% else %}secondary{% endif %}">
-                        {{ dossier.get_status_display }}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Matricule Employé:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.employer }}</p>
-                            </div>
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Service:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.department }}</p>
-                            </div>
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Date Début:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.start_date|date:"d/m/Y" }}</p>
-                            </div>
+        <div class="card-modern mb-5 overflow-hidden">
+            <div class="status-stripe bg-{{ dossier.get_status_color }}"></div>
+
+            <div class="card-body p-5">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-start mb-5">
+                    <div>
+                        <span class="text-xs text-uppercase text-muted fw-800 letter-spacing-wide d-block mb-1">Détails
+                            du Dossier</span>
+                        <h2 class="fw-800 mb-1" style="color: var(--text-main);">#{{ dossier.reference }}</h2>
+                        <div class="d-flex gap-3 text-sm text-muted">
+                            <span><i class="far fa-calendar-alt me-1"></i> Créé le {{ dossier.created_at|date:"d M Y"
+                                }}</span>
+                            <span><i class="fas fa-building me-1"></i> {{ dossier.department }}</span>
                         </div>
-                        <div class="col-md-6">
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Médecin:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.doctor }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span
+                            class="badge rounded-pill px-4 py-2 bg-{{ dossier.get_status_color }}-subtle text-{{ dossier.get_status_color }} border border-{{ dossier.get_status_color }}-subtle mb-2 d-inline-block">
+                            {{ dossier.get_status_display }}
+                        </span>
+                        {% if dossier.status == 'PENDING' %}
+                        <p class="text-xs text-muted mb-0">Votre dossier est en cours de traitement</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="row g-5 mb-5">
+                    <div class="col-md-7">
+                        <h5 class="fw-800 mb-4" style="color: var(--text-main);">Résumé Médical</h5>
+                        <div class="medical-text bg-soft p-4 rounded-lg border">
+                            <h6 class="text-xs text-uppercase text-muted fw-800 mb-2">Diagnostic</h6>
+                            <p class="mb-4">{{ dossier.diagnosis|default:"Non spécifié"|linebreaks }}</p>
+
+                            <h6 class="text-xs text-uppercase text-muted fw-800 mb-2">Traitement</h6>
+                            <p class="mb-0">{{ dossier.treatment_plan|default:"Non spécifié"|linebreaks }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <h5 class="fw-800 mb-4" style="color: var(--text-main);">Équipe Médicale</h5>
+                        <div class="p-4 border rounded-lg bg-soft h-100">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box bg-blue-soft text-primary me-3" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user-md fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-800">{{ dossier.doctor }}</h6>
+                                    <span class="text-xs text-muted">Médecin Référent</span>
+                                </div>
                             </div>
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Motif:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.reason }}</p>
-                            </div>
-                            <div class="dossier-info-item mb-3">
-                                <span class="text-muted small">Créé le:</span>
-                                <p class="mb-0 fw-bold">{{ dossier.created_at|date:"d/m/Y H:i" }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-warning-soft text-warning me-3"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="fas fa-hospital fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-800">{{ dossier.department }}</h6>
+                                    <span class="text-xs text-muted">Service de santé Newrest</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <hr>
-                    <div class="dossier-comments">
-                        <h6 class="text-muted mb-2">Commentaires:</h6>
-                        <div class="bg-light p-3 rounded">
-                            <p class="mb-0">{{ dossier.comments|default:"Aucun commentaire"|linebreaks }}</p>
-                        </div>
-                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Actions Column -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        {% for action in dossier.actions %}
-                            <a href="{{ action.url }}" class="btn btn-{% if action.name == 'reject' %}outline-danger{% elif action.name == 'approve' %}outline-success{% elif action.name == 'download_all' %}outline-primary{% else %}outline-secondary{% endif %} btn-sm text-start">
-                                <i class="fas fa-{% if action.name == 'download_all' %}download{% elif action.name == 'upload' %}upload{% elif action.name == 'scan' %}camera{% elif action.name == 'generate_report' %}file-pdf{% else %}edit{% endif %} me-2"></i>
-                                {{ action.label }}
+                <!-- Attachments Section -->
+                <div class="attachments-section mt-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-800 mb-0" style="color: var(--text-main);">Documents & Justificatifs</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'generate_report' dossier.id %}"
+                                class="btn btn-sm btn-outline-primary px-4 rounded-pill fw-600">
+                                <i class="fas fa-file-pdf me-2"></i> Rapport Complet
                             </a>
-                        {% endfor %}
-                        <a href="{% url 'generate_report' dossier.id %}" class="btn btn-outline-info btn-sm text-start">
-                            <i class="fas fa-file-download me-2"></i>Télécharger Rapport
-                        </a>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Attachments Section -->
-        <div class="col-12 mt-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0"><i class="fas fa-paperclip me-2"></i>Pièces Jointes</h5>
-                </div>
-                <div class="card-body">
-                    {% if dossier.documents %}
-                        <div class="row g-3">
-                            {% for document in dossier.documents %}
-                                <div class="col-md-4 col-lg-3">
-                                    <div class="card document-card h-100 border">
-                                        <div class="card-body d-flex flex-column">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-file-{% if document.type == 'PRESCRIPTION' %}prescription{% elif document.type == 'CERTIFICATE' %}certificate{% elif document.type == 'SCAN' %}image{% else %}alt{% endif %} me-2 text-muted"></i>
-                                                <h6 class="mb-0 text-truncate">{{ document.name }}</h6>
-                                            </div>
-                                            <div class="text-muted small mb-3">
-                                                <div>{{ document.get_type_display }}</div>
-                                                <div>{{ document.size_kb }} KB</div>
-                                                <div>Ajouté le {{ document.uploaded_at|date:"d/m/Y" }}</div>
-                                            </div>
-                                            <div class="mt-auto">
-                                                <a href="{{ document.chemin_storage.url }}" class="btn btn-sm btn-outline-primary w-100" download>
-                                                    <i class="fas fa-download me-1"></i> Télécharger
-                                                </a>
-                                            </div>
-                                        </div>
+                    <div class="row g-3">
+                        {% for document in documents %}
+                        <div class="col-md-6 col-lg-4">
+                            <div
+                                class="document-item p-3 border rounded-lg d-flex align-items-center justify-content-between hover-lift bg-white">
+                                <div class="d-flex align-items-center overflow-hidden">
+                                    <div class="icon-box bg-light text-muted me-3"
+                                        style="width: 40px; height: 40px; flex-shrink: 0;">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h6 class="mb-0 text-sm fw-600 text-truncate">{{
+                                            document.nom_fichier|default:document.name }}</h6>
+                                        <span class="text-xs text-muted">{{ document.taille_ko|default:document.size_kb
+                                            }} KB</span>
                                     </div>
                                 </div>
-                            {% endfor %}
+                                {% if document.chemin_storage %}
+                                <a href="{{ document.chemin_storage.url }}"
+                                    class="btn btn-sm btn-light rounded-circle ms-2" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% elif document.file %}
+                                <a href="{{ document.file.url }}" class="btn btn-sm btn-light rounded-circle ms-2"
+                                    download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
                         </div>
-                    {% else %}
-                        <div class="alert alert-light border text-center py-4">
-                            <i class="fas fa-info-circle fa-2x mb-3 text-muted"></i>
-                            <p class="mb-0">Aucune pièce jointe disponible</p>
+                        {% empty %}
+                        <div class="col-12 text-center py-5 bg-soft rounded-lg border-dashed">
+                            <i class="fas fa-folder-open text-muted mb-3 d-block" style="font-size: 2rem;"></i>
+                            <p class="text-muted small mb-0">Aucun document n'a été rattaché à ce dossier.</p>
                         </div>
-                    {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endfor %}
 </div>
 
 <style>
-    .dossier-container {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 2rem;
+    .fw-800 {
+        font-weight: 800;
     }
-    .dossier-container:last-child {
-        border-bottom: none;
+
+    .fw-600 {
+        font-weight: 600;
     }
-    .dossier-info-item {
-        background-color: #f8f9fa;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
+
+    .letter-spacing-wide {
+        letter-spacing: 0.05em;
     }
-    .document-card {
-        transition: transform 0.2s;
+
+    .rounded-lg {
+        border-radius: 12px;
     }
-    .document-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+
+    .document-item {
+        transition: var(--transition-base);
+    }
+
+    .document-item:hover {
+        border-color: var(--primary) !important;
+        background: #f0f9ff !important;
+    }
+
+    .medical-text p {
+        color: var(--text-secondary);
+        line-height: 1.8;
     }
 </style>
 {% endblock %}

@@ -85,15 +85,26 @@ class DossierMedical(MedicalDossierBase):
         ]
     def __str__(self):
         return f"{self.reference} - {self.employer} ({self.get_status_display()})"
-    
     def save(self, *args, **kwargs):
         if not self.reference:
             # Generate reference: DM-YYYYMMDD-XXXX
             date_part = timezone.now().strftime('%Y%m%d')
-            last_num = DossierMedical.objects.filter(
-                reference__startswith=f'DM-{date_part}'
-            ).count() + 1
-            self.reference = f"DM-{date_part}-{last_num:04d}"
+            prefix = f'DM-{date_part}-'
+            # Get all references for today and find the max suffix
+            last_dossier = DossierMedical.objects.filter(
+                reference__startswith=prefix
+            ).only('reference').order_by('-reference').first()
+            
+            if last_dossier:
+                try:
+                    last_num = int(last_dossier.reference.split('-')[-1])
+                    new_num = last_num + 1
+                except (ValueError, IndexError):
+                    new_num = 1
+            else:
+                new_num = 1
+                
+            self.reference = f"{prefix}{new_num:04d}"
         
         # Automatically set controller if submitted by agent
         if self.status == 'SUBMITTED' and not self.controller:
@@ -112,13 +123,17 @@ class DossierMedical(MedicalDossierBase):
     def user_can_view(self, user):
         """Check if user can view this dossier"""
         if user.role.name == 'NORMAL':
-            return self.created_by == user
-        return True  # Other roles can view all
+            return self.employer == user
+        elif user.role.name == 'AGENT':
+            return self.created_by == user or self.employer == user
+        return True # Admin/controller/agent can usually view
 
     def user_can_edit(self, user):
         """Check if user can modify this dossier"""
-        if user.role.name == 'AGENT':
+        if user.role.name in ['ADMIN', 'CONTROLLER']:
             return True
+        if user.role.name == 'AGENT':
+            return self.created_by == user and self.status != 'APPROVED'
         return False
 class MedicalAttachment(models.Model):
     TYPE_CHOICES = [
@@ -213,28 +228,3 @@ class PieceJointe(models.Model):
     def user_can_download(self, user):
         """Check if user can download this attachment"""
         return self.dossier.user_can_view(user)
-    
-def get_role_based_queryset(user):
-    if user.role.name in ['ADMIN', 'CONTROLLER']:
-        return DossierMedical.objects.all()
-    elif user.role.name == 'AGENT':
-        return DossierMedical.objects.filter(created_by=user)
-    else:  # NORMAL user
-        return DossierMedical.objects.filter(employer=user.employer)
-
-def user_can_view(self, user):
-    """Check if user can view this dossier"""
-    if user.role.name == 'NORMAL':
-        return self.employer == user.employer
-    elif user.role.name == 'AGENT':
-        return self.created_by == user or self.employer == user.employer
-    return True  # Admin/controller can view all
-
-def user_can_edit(self, user):
-    """Check if user can modify this dossier"""
-    if user.role.name in ['ADMIN', 'AGENT']:
-        return self.status == 'DRAFT' and (
-            user.role.name == 'ADMIN' or 
-            self.created_by == user
-        )
-    return False

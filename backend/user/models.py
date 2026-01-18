@@ -92,7 +92,7 @@ class User(AbstractUser):
                 self.role = Role.objects.get_or_create(name='NORMAL')[0]
         super().save(*args, **kwargs)
     def get_full_name(self):
-        return f"{self.first_name} {self.last_name}".strip() or self.username    
+        return self.full_name
     
 def has_role(self, role_name):
     return self.role.name == role_name

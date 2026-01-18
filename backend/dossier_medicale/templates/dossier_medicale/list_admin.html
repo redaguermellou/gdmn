@@ -54,8 +54,7 @@
     <!-- Dossier Grid -->
     <div class="row g-4">
         {% for dossier in dossiers %}
-        <div class="col-xl-4 col-lg-6 col-md-6 animate-fade-up"
-            style="animation-delay: {{ forloop.counter0|add:2 }}00ms;">
+        <div class="col-xl-4 col-lg-6 col-md-6 animate-fade-up">
             <div class="card-modern h-100 card-hover-effect position-relative overflow-hidden group">
                 <!-- Status Stripe -->
                 <div class="status-stripe bg-{{ dossier.get_status_color }}"></div>
@@ -102,7 +101,7 @@
                             Voir détails
                         </a>
 
-                        <div class="action-buttons opacity-0 group-hover-visible transition-all">
+                        <div class="action-buttons group-hover-visible transition-all">
                             {% if request.user.role.name in 'AGENT,ADMIN,CONTROLLER' and dossier.status != 'APPROVED' %}
                             <a href="{% url 'edit_dossier' dossier.id %}"
                                 class="btn-icon btn-icon-sm text-secondary hover-primary" title="Modifier">
@@ -185,195 +184,6 @@
     {% endif %}
 </div>
 
-<style>
-    .animate-slide-down {
-        animation: slideDown 0.5s ease-out;
-    }
+<!-- Custom Styles are now in main.css -->
 
-    .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-        opacity: 0;
-    }
-
-    .animate-fade-up {
-        animation: fadeUp 0.5s ease-out forwards;
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes fadeUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .wave {
-        animation: name 2s infinite;
-        display: inline-block;
-        transform-origin: 70% 70%;
-    }
-
-    .btn-white {
-        background: white;
-        border: 1px solid #e2e8f0;
-    }
-
-    .btn-white:hover {
-        background: #f8fafc;
-        transform: translateY(-2px);
-    }
-
-    .hover-lift {
-        transition: transform 0.2s;
-    }
-
-    .hover-lift:hover {
-        transform: translateY(-3px);
-    }
-
-    .input-group-modern {
-        display: flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: var(--radius-md);
-    }
-
-    .input-icon {
-        color: var(--text-muted);
-    }
-
-    .status-stripe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 4px;
-        transition: width 0.2s;
-    }
-
-    .card-hover-effect:hover .status-stripe {
-        width: 6px;
-    }
-
-    .icon-box {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f0f9ff;
-    }
-
-    .bg-blue-soft {
-        background-color: #baaae933;
-    }
-
-    .text-xs {
-        font-size: 0.75rem;
-    }
-
-    .text-sm {
-        font-size: 0.875rem;
-    }
-
-    .avatar-sm {
-        width: 28px;
-        height: 28px;
-        background-color: #e2e8f0;
-    }
-
-    .border-dashed {
-        border-style: dashed !important;
-        border-color: #cbd5e1 !important;
-    }
-
-    .group-hover-visible {
-        opacity: 1 !important;
-        transform: none !important;
-        visibility: visible !important;
-    }
-
-    /* Removed hover effect to keep buttons always visible */
-    /* .group:hover .group-hover-visible { ... } */
-
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s;
-        text-decoration: none;
-    }
-
-    .btn-icon:hover {
-        background-color: #f1f5f9;
-    }
-
-    .hover-danger:hover {
-        color: #ef4444 !important;
-        background-color: #fef2f2 !important;
-    }
-
-    .hover-primary:hover {
-        color: #0ea5e9 !important;
-        background-color: #f0f9ff !important;
-    }
-
-    .pagination-modern .page-link {
-        border: none;
-        margin: 0 4px;
-        border-radius: 8px;
-        color: var(--text-secondary);
-        font-weight: 600;
-        background: transparent;
-    }
-
-    .pagination-modern .page-item.active .page-link {
-        background-color: var(--primary);
-        color: white;
-        box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);
-    }
-
-    /* Dynamic Badge Colors */
-    .bg-secondary-subtle {
-        background-color: #f1f5f9;
-        color: #64748b;
-    }
-
-    .bg-warning-subtle {
-        background-color: #fffbeb;
-        color: #d97706;
-    }
-
-    .bg-success-subtle {
-        background-color: #f0fdf4;
-        color: #16a34a;
-    }
-
-    .bg-danger-subtle {
-        background-color: #fef2f2;
-        color: #dc2626;
-    }
-</style>
 {% endblock %}

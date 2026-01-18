@@ -1,0 +1,67 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static " admin/css/dashboard.css" %}">{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{ user.get_username }}. Manage your application data.</p>
+    </div>
+
+    {% if app_list %}
+    <div class="dashboard-grid">
+        {% for app in app_list %}
+        <div class="app-card">
+            <div class="app-header">
+                <h2>
+                    <a href="{{ app.app_url }}" class="section"
+                        title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                        {{ app.name }}
+                    </a>
+                </h2>
+            </div>
+            <div class="app-body">
+                {% for model in app.models %}
+                <div class="model-row">
+                    {% if model.admin_url %}
+                    <a href="{{ model.admin_url }}" class="model-name">{{ model.name }}</a>
+                    {% else %}
+                    <span class="model-name" style="color: #9ca3af;">{{ model.name }}</span>
+                    {% endif %}
+
+                    <div class="model-actions">
+                        {% if model.add_url %}
+                        <a href="{{ model.add_url }}" class="action-btn add">
+                            Add
+                        </a>
+                        {% endif %}
+                        {% if model.admin_url %}
+                        <a href="{{ model.admin_url }}" class="action-btn edit">
+                            Change
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>{% translate "You don't have permission to view or edit anything." %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

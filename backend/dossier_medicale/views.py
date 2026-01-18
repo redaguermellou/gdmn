@@ -4,7 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
-from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.units import inch
 import zipfile
 import io
 from .models import DossierMedical, PieceJointe, DossierAuditLog
@@ -44,7 +48,7 @@ def dossier_list(request):
     # Base queryset per role
     if user.role.name == 'NORMAL':
         dossiers = DossierMedical.objects.filter(employer=user)
-        template = 'dossier_medicale/detail.html'
+        template = 'dossier_medicale/list_normal.html'
     elif user.role.name in ['ADMIN', 'CONTROLLER']:
         dossiers = DossierMedical.objects.all()
         template = 'dossier_medicale/list_admin.html'
@@ -182,7 +186,7 @@ def create_dossier(request):
         raise PermissionDenied("You don't have permission to create dossiers")
 
     if request.method == 'POST':
-        form = DossierForm(request.POST, request.FILES)
+        form = DossierForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             try:
                 # Save main dossier
@@ -236,12 +240,12 @@ def create_dossier(request):
             'priority': 2,
             'doctor': request.user.get_full_name() or "Dr. Smith"
         }
-        form = DossierForm(initial=initial_data)
+        form = DossierForm(initial=initial_data, user=request.user)
 
     return render(request, 'dossier_medicale/create.html', {
         'form': form,
-        'title': 'Create New Medical Dossier',
-        'required_fields': ['employee_id', 'department', 'doctor', 'diagnosis', 'treatment_plan']
+        'title': 'Créer un nouveau dossier médical',
+        'required_fields': ['employer', 'department', 'doctor', 'diagnosis', 'treatment_plan', 'start_date']
     })
 
 
@@ -250,14 +254,22 @@ from django.contrib.auth.decorators import permission_required
 
 def edit_dossier(request, dossier_id):
     dossier = get_object_or_404(DossierMedical, id=dossier_id)
-    if request.user.role.name not in ['ADMIN', 'CONTROLLER']:
+    
+    # Updated permissions: Admin, Controller, or the Agent who created it
+    is_authorized = (
+        request.user.role.name in ['ADMIN', 'CONTROLLER'] or 
+        (request.user.role.name == 'AGENT' and dossier.created_by == request.user)
+    )
+    
+    if not is_authorized:
         return HttpResponseForbidden()
+
     if dossier.status == 'APPROVED':  # Only ban editing if APPROVED
         messages.error(request, "Approved dossiers cannot be edited.")
         return redirect('dossier_detail', dossier_id=dossier.id)
 
     if request.method == 'POST':
-        form = DossierForm(request.POST, instance=dossier)
+        form = DossierForm(request.POST, request.FILES, instance=dossier, user=request.user)
         if form.is_valid():
             # Track changes could be implemented here if needed, for now just logging the event
             old_status = dossier.status
@@ -272,15 +284,40 @@ def edit_dossier(request, dossier_id):
             )
             
             messages.success(request, f'Dossier {updated_dossier.reference} updated successfully!')
+            
+            # Handle additional attachments if any were added during edit
+            files = request.FILES.getlist('attachments')
+            for file in files:
+                PieceJointe.objects.create(
+                    dossier=updated_dossier,
+                    chemin_storage=file,
+                    nom_fichier=file.name,
+                    type=file.content_type.split('/')[-1].upper(),
+                    taille_ko=file.size // 1024,
+                    uploaded_by=request.user,
+                    description=f"Added during update: {file.name}"
+                )
+                DossierAuditLog.objects.create(
+                    dossier=updated_dossier,
+                    action='ATTACHMENT_ADD',
+                    user=request.user,
+                    details={'filename': file.name, 'size_kb': file.size // 1024}
+                )
+
             return redirect('dossier_detail', dossier_id=dossier.id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
-        form = DossierForm(instance=dossier)
+        form = DossierForm(instance=dossier, user=request.user)
 
     return render(request, 'dossier_medicale/edit.html', {
         'form': form,
         'dossier': dossier,
         'title': f'Edit Dossier {dossier.reference}'
     })
+
 
 @login_required
 def upload_document(request, dossier_id):
@@ -387,47 +424,119 @@ def reject_dossier(request, dossier_id):
 def generate_report(request, dossier_id):
     dossier = get_object_or_404(DossierMedical, pk=dossier_id)
 
-    # Allow CONTROLLER, ADMIN, or NORMAL (but only for their own dossier)
+    # Permission check
     if request.user.role.name in ['CONTROLLER', 'ADMIN']:
         pass
     elif request.user.role.name == 'NORMAL':
         if dossier.employer.id != request.user.id:
             return HttpResponseForbidden()
+    elif request.user.role.name == 'AGENT' and dossier.created_by == request.user:
+        pass
     else:
         return HttpResponseForbidden()
 
-    # Create PDF report
+    # Create the PDF response
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="report_{dossier.reference}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="rapport_{dossier.reference}.pdf"'
 
-    p = canvas.Canvas(response)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
+    styles = getSampleStyleSheet()
+    
+    # Custom Styles
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor("#0ea5e9"),
+        alignment=1,
+        spaceAfter=30
+    )
+    
+    section_style = ParagraphStyle(
+        'SectionStyle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor("#1e293b"),
+        spaceBefore=20,
+        spaceAfter=10,
+        borderPadding=5,
+        backgroundColor=colors.HexColor("#f1f5f9")
+    )
 
-    # Report header
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(100, 800, f"Medical Dossier Report - {dossier.reference}")
+    content = []
 
-    # Basic information
-    p.setFont("Helvetica", 12)
-    y_position = 750
-    # Show employee name or username
-    employee_name = getattr(dossier.employer, 'get_full_name', lambda: str(dossier.employer))()
-    p.drawString(100, y_position, f"Employee: {employee_name}")
-    y_position -= 30
-    p.drawString(100, y_position, f"Department: {dossier.department}")
-    y_position -= 30
-    p.drawString(100, y_position, f"Status: {dossier.get_status_display()}")
-    y_position -= 30
+    # Title
+    content.append(Paragraph(f"RAPPORT MÉDICAL", title_style))
+    content.append(Paragraph(f"Référence: {dossier.reference}", styles['Normal']))
+    content.append(Spacer(1, 0.2 * inch))
 
-    # Documents list
-    p.drawString(100, y_position, "Attached Documents:")
-    y_position -= 30
-    for piece in dossier.pieces_jointes.all():
-        p.drawString(120, y_position, f"- {piece.nom_fichier} ({piece.type})")
-        y_position -= 20
+    # General Information Table
+    data = [
+        ["INFORMATION GÉNÉRALE", ""],
+        ["Employé:", dossier.employer.full_name],
+        ["Département:", dossier.department],
+        ["Médecin:", dossier.doctor],
+        ["Date de début:", dossier.start_date.strftime('%d/%m/%Y')],
+        ["Statut:", dossier.get_status_display()],
+        ["Priorité:", dossier.get_priority_display()]
+    ]
+    
+    t = Table(data, colWidths=[1.5*inch, 4*inch])
+    t.setStyle(TableStyle([
+        ('SPAN', (0, 0), (1, 0)),
+        ('BACKGROUND', (0, 0), (1, 0), colors.HexColor("#0ea5e9")),
+        ('TEXTCOLOR', (0, 0), (1, 0), colors.whitesmoke),
+        ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (1, 0), 12),
+        ('BACKGROUND', (0, 1), (0, -1), colors.HexColor("#f8fafc")),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    content.append(t)
 
-    p.showPage()
-    p.save()
+    # Medical Details
+    content.append(Paragraph("DÉTAILS MÉDICAUX", section_style))
+    
+    content.append(Paragraph("<b>Diagnostic:</b>", styles['Normal']))
+    content.append(Paragraph(dossier.diagnosis, styles['Normal']))
+    content.append(Spacer(1, 0.1 * inch))
+    
+    content.append(Paragraph("<b>Plan de Traitement:</b>", styles['Normal']))
+    content.append(Paragraph(dossier.treatment_plan, styles['Normal']))
+    
+    if dossier.reason:
+        content.append(Spacer(1, 0.1 * inch))
+        content.append(Paragraph("<b>Raison:</b>", styles['Normal']))
+        content.append(Paragraph(dossier.reason, styles['Normal']))
 
+    if dossier.comments:
+        content.append(Spacer(1, 0.1 * inch))
+        content.append(Paragraph("<b>Commentaires additionnels:</b>", styles['Normal']))
+        content.append(Paragraph(dossier.comments, styles['Normal']))
+
+    # Documents
+    if dossier.pieces_jointes.exists():
+        content.append(Paragraph("PIÈCES JOINTES", section_style))
+        for piece in dossier.pieces_jointes.all():
+            content.append(Paragraph(f"• {piece.nom_fichier} ({piece.type})", styles['Normal']))
+
+    # Footer
+    content.append(Spacer(1, 0.5 * inch))
+    footer_text = f"Généré le {timezone.now().strftime('%d/%m/%Y à %H:%M')} - Système de Gestion Dossiers Médicaux"
+    content.append(Paragraph(footer_text, styles['Italic']))
+
+    # Build PDF
+    doc.build(content)
+    
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    
     return response
 
 @login_required

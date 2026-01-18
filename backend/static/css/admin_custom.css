@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Modern Admin Design System */
+:root {
+    --primary-color: #0ea5e9;
+    --primary-hover: #0284c7;
+    --bg-body: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-secondary: #475569;
+    --border-color: #e2e8f0;
+    --header-bg: #1e293b;
+    --header-text: #f8fafc;
+
+    /* Django Admin Overrides */
+    --primary: var(--primary-color);
+    --secondary: #334155;
+    --accent: var(--primary-color);
+    --primary-fg: #ffffff;
+    --body-fg: var(--text-main);
+    --body-bg: var(--bg-body);
+    --body-quiet-color: var(--text-secondary);
+    --header-color: var(--header-text);
+    --header-branding-color: var(--header-text);
+    --header-bg: var(--header-bg);
+    --header-link-color: var(--header-text);
+    --breadcrumbs-fg: var(--text-secondary);
+    --breadcrumbs-link-fg: var(--primary-color);
+    --breadcrumbs-bg: var(--bg-card);
+    --link-fg: var(--primary-color);
+    --link-hover-color: var(--primary-hover);
+    --hairline-color: var(--border-color);
+    --selected-bg: #f0f9ff;
+    --selected-row: #f0f9ff;
+    --button-bg: var(--primary-color);
+    --button-fg: #ffffff;
+    --button-hover-bg: var(--primary-hover);
+}
+
+body {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    margin: 0;
+}
+
+#header {
+    background: var(--header-bg) !important;
+    padding: 1rem 2rem;
+}
+
+#branding h1 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
+}
+
+.breadcrumbs {
+    background: var(--bg-card) !important;
+    padding: 10px 2rem !important;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+#content {
+    padding: 2rem !important;
+}
+
+/* Dashboard Cards */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.app-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.app-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.app-header {
+    background: #f8fafc;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-header h2 a {
+    color: var(--text-main);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.model-row {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.model-row:last-child {
+    border-bottom: none;
+}
+
+.model-name {
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.model-name:hover {
+    color: var(--primary-color);
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.action-btn.add {
+    background: #f0f9ff;
+    color: var(--primary-color);
+}
+
+.action-btn.add:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.action-btn.edit {
+    background: #f1f5f9;
+    color: var(--text-secondary);
+}
+
+.action-btn.edit:hover {
+    background: var(--secondary);
+    color: white;
+}
+
+/* Forms */
+fieldset {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem;
+    background: var(--bg-card);
+    padding: 1.5rem !important;
+    margin-bottom: 2rem !important;
+}
+
+fieldset h2 {
+    background: transparent !important;
+    color: var(--text-main) !important;
+    font-weight: 800 !important;
+    font-size: 1.25rem !important;
+    padding: 0 0 1rem 0 !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+input[type=text],
+input[type=password],
+input[type=email],
+select,
+textarea {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.625rem 1rem !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+input:focus {
+    border-color: var(--primary-color) !important;
+    outline: 2px solid rgba(14, 165, 233, 0.2) !important;
+}
+
+.submit-row {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+}

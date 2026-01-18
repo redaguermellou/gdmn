@@ -1,37 +1,159 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load django_bootstrap5 %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-        <div class="card-modern">
-            <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
-                <h3 class="mb-0 fw-bold" style="color: var(--primary-dark);">
-                    <i class="fas fa-edit me-2 text-primary"></i>{{ title }}
-                </h3>
-            </div>
-            <div class="card-body p-4">
-                {% if messages %}
-                <div id="msg-container" class="mb-4">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} fade show shadow-sm border-0" role="alert">
-                        <i class="fas fa-info-circle me-2"></i> {{ message }}
-                    </div>
-                    {% endfor %}
+<div class="row justify-content-center animate-fade-up">
+    <div class="col-lg-11">
+        <div class="card-modern overflow-hidden">
+            <div class="card-header bg-white border-0 pt-5 pb-2 px-5 text-center">
+                <div class="icon-box bg-warning-soft text-warning mx-auto mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-edit fa-lg"></i>
                 </div>
-                {% endif %}
+                <h3 class="fw-800 mb-1" style="color: var(--text-main);">{{ title }}</h3>
+                <p class="text-muted">Modifier les informations du dossier médical #{{ dossier.reference }}</p>
+            </div>
 
-                <form method="post" novalidate class="needs-validation">
+            <div class="card-body p-5">
+
+                <form method="post" enctype="multipart/form-data" id="dossierForm" novalidate class="needs-validation">
                     {% csrf_token %}
-                    {% bootstrap_form form %}
 
-                    <div class="d-flex gap-3 mt-5 justify-content-end">
+                    <div class="row g-4">
+                        <!-- Left Column: Form Fields -->
+                        <div class="col-lg-8">
+                            <div class="section-group mb-5">
+                                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                    <span class="step-number me-2">1</span> Informations de Base
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Employé</label>
+                                        {{ form.employer }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Statut</label>
+                                        {{ form.status }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Priorité</label>
+                                        {{ form.priority }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Département</label>
+                                        {{ form.department }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Médecin</label>
+                                        {{ form.doctor }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-xs fw-800 text-muted text-uppercase">Date de
+                                            début</label>
+                                        {{ form.start_date }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-xs fw-800 text-muted text-uppercase">Date de
+                                            fin</label>
+                                        {{ form.end_date }}
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end pb-2">
+                                        <div class="form-check form-switch modern-switch">
+                                            {{ form.is_confidential }}
+                                            <label
+                                                class="form-check-label text-xs fw-800 text-muted text-uppercase ms-2">Confidentiel</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-group mb-4">
+                                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                                    <span class="step-number me-2">2</span> Détails Médicaux
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Diagnostic</label>
+                                        {{ form.diagnosis }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs fw-800 text-muted text-uppercase">Plan de
+                                            Traitement</label>
+                                        {{ form.treatment_plan }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Raison</label>
+                                        {{ form.reason }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label
+                                            class="form-label text-xs fw-800 text-muted text-uppercase">Commentaires</label>
+                                        {{ form.comments }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Add New Attachments -->
+                        <div class="col-lg-4">
+                            <div class="sticky-top" style="top: 100px; z-index: 10;">
+                                <div class="card-modern bg-soft p-4 border-0 mb-4">
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                                        <i class="fas fa-paperclip text-primary me-2"></i> Ajouter des documents
+                                    </h5>
+
+                                    <div class="upload-zone p-4 text-center border-dashed rounded-lg mb-3"
+                                        id="dropZone">
+                                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                        <p class="small text-muted mb-0">Cliquez ou glissez vos fichiers ici</p>
+                                        <input type="file" name="attachments" id="attachmentsInput" multiple
+                                            class="d-none">
+                                        <button type="button" class="btn btn-sm btn-light mt-2 fw-medium"
+                                            onclick="document.getElementById('attachmentsInput').click()">
+                                            Parcourir
+                                        </button>
+                                    </div>
+
+                                    <div id="fileList" class="file-list">
+                                        <p class="text-center text-muted small my-3" id="noFilesMsg">Aucun nouveau
+                                            fichier</p>
+                                    </div>
+                                </div>
+
+                                <div class="card-modern bg-soft p-4 border-0">
+                                    <h6 class="fw-800 mb-3 text-secondary">Documents existants</h6>
+                                    <div class="existing-files">
+                                        {% for doc in dossier.pieces_jointes.all %}
+                                        <div class="d-flex align-items-center mb-2 p-2 bg-white rounded shadow-sm">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <span class="text-xs text-truncate">{{ doc.nom_fichier }}</span>
+                                        </div>
+                                        {% empty %}
+                                        <p class="text-xs text-muted mb-0">Aucun document joint.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-5 opacity-10">
+
+                    <div class="d-flex justify-content-between align-items-center">
                         <a href="{% url 'dossier_detail' dossier.id %}"
-                            class="btn btn-light px-4 py-2 rounded-pill fw-medium">
-                            Annuler
+                            class="btn btn-link text-muted text-decoration-none fw-600">
+                            <i class="fas fa-arrow-left me-2"></i> Annuler
                         </a>
-                        <button type="submit" class="btn btn-modern-primary px-5 py-2 rounded-pill">
-                            <i class="fas fa-save me-2"></i>Enregistrer
+                        <button type="submit" class="btn btn-modern-primary px-5 py-3 rounded-pill shadow-lg"
+                            id="submitBtn">
+                            <i class="fas fa-save me-2"></i> Enregistrer les modifications
                         </button>
                     </div>
                 </form>
@@ -40,15 +162,95 @@
     </div>
 </div>
 
-{% if messages %}
 <script>
-    setTimeout(function () {
-        var msg = document.getElementById('msg-container');
-        if (msg) {
-            msg.style.opacity = '0';
-            setTimeout(() => msg.remove(), 500);
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('attachmentsInput');
+        const fileList = document.getElementById('fileList');
+        const noFilesMsg = document.getElementById('noFilesMsg');
+        const dropZone = document.getElementById('dropZone');
+
+        let selectedFiles = [];
+
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(item => {
+                dataTransfer.items.add(item.file);
+            });
+            fileInput.files = dataTransfer.files;
         }
-    }, 4000);
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                noFilesMsg.style.display = 'none';
+                Array.from(files).forEach(file => {
+                    const fileId = Date.now() + Math.random();
+                    selectedFiles.push({ id: fileId, file: file });
+
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                    <div class="d-flex align-items-center overflow-hidden">
+                        <i class="fas fa-file-alt text-primary me-2"></i>
+                        <span class="small text-truncate" style="max-width: 150px;">${file.name}</span>
+                    </div>
+                    <i class="fas fa-times-circle btn-remove-file" onclick="removeFile(${fileId}, this.parentElement)"></i>
+                `;
+                    fileList.appendChild(fileItem);
+                });
+                updateFileInput();
+            }
+        }
+
+        window.removeFile = function (id, element) {
+            selectedFiles = selectedFiles.filter(item => item.id !== id);
+            element.remove();
+            if (selectedFiles.length === 0) {
+                noFilesMsg.style.display = 'block';
+            }
+            updateFileInput();
+        };
+
+        const form = document.getElementById('dossierForm');
+        form.addEventListener('submit', function () {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Enregistrement...';
+        });
+    });
 </script>
-{% endif %}
+
+<style>
+    .fw-800 {
+        font-weight: 800;
+    }
+
+    .text-xs {
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+    }
+
+    .file-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
 {% endblock %}

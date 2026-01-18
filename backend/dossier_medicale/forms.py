@@ -1,22 +1,14 @@
 from django import forms
-from .models import DossierMedical, MedicalAttachment, PieceJointe
+from .models import DossierMedical, PieceJointe, User
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
-from django import forms
-from django.utils import timezone
-from django.core.exceptions import ValidationError
-from .models import DossierMedical, User
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 class DossierForm(forms.ModelForm):
-    attachments = forms.FileField(
-        required=False,
-        widget=MultipleFileInput(attrs={'multiple': True}),
-        help_text="You can upload multiple files"
-    )
+    # Field removed from here to be handled manually in the view
+    # to avoid 'No file was submitted' validation errors.
     
     class Meta:
         model = DossierMedical
@@ -35,72 +27,52 @@ class DossierForm(forms.ModelForm):
             'is_confidential',
         ]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-            'diagnosis': forms.Textarea(attrs={'rows': 3}),
-            'treatment_plan': forms.Textarea(attrs={'rows': 3}),
-            'comments': forms.Textarea(attrs={'rows': 2}),
-            'priority': forms.Select(choices=DossierMedical.PRIORITY_LEVELS),
-        }
-        help_texts = {
-            'employee_id': "Employee ID or registration number",
-            'is_confidential': "Check if this dossier contains sensitive information",
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control-modern'}),
+            'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control-modern'}),
+            'diagnosis': forms.Textarea(attrs={'rows': 3, 'class': 'form-control-modern'}),
+            'treatment_plan': forms.Textarea(attrs={'rows': 3, 'class': 'form-control-modern'}),
+            'comments': forms.Textarea(attrs={'rows': 2, 'class': 'form-control-modern'}),
+            'priority': forms.Select(attrs={'class': 'form-select-modern'}),
+            'status': forms.Select(attrs={'class': 'form-select-modern'}),
+            'employer': forms.Select(attrs={'class': 'form-select-modern'}),
+            'department': forms.TextInput(attrs={'class': 'form-control-modern'}),
+            'doctor': forms.TextInput(attrs={'class': 'form-control-modern'}),
+            'reason': forms.TextInput(attrs={'class': 'form-control-modern'}),
+            'is_confidential': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # Get the current user from kwargs
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Set initial values
-        self.fields['start_date'].initial = timezone.now().date()
-        self.fields['priority'].initial = 2
-        
-        # Customize employer queryset based on user role
+        if 'status' in self.fields:
+            self.fields['status'].required = False
+            
+        # Customize employer queryset 
         if user and hasattr(user, 'role'):
             if user.role.name in ['ADMIN', 'CONTROLLER']:
-                # Show all active non-admin users for admin/controllers
-                self.fields['employer'].queryset = User.objects.filter(
-                    is_active=True
-                ).exclude(
-                    id=user.id
-                ).order_by('username')
+                self.fields['employer'].queryset = User.objects.filter(is_active=True).exclude(id=user.id).order_by('full_name')
             else:
-                # For other roles, show a more limited selection
                 self.fields['employer'].queryset = User.objects.filter(
                     is_active=True,
-                    role__name__in=['NORMAL', 'AGENT']  # Adjust as needed
-                ).order_by('username')
-        
-        # Add CSS classes to all fields
-        for field_name, field in self.fields.items():
-            if field_name != 'is_confidential':
-                field.widget.attrs.update({'class': 'form-control'})
-            if isinstance(field, forms.BooleanField):
-                field.widget.attrs.update({'class': 'form-check-input'})
-    
+                    role__name__in=['NORMAL', 'AGENT']
+                ).order_by('full_name')
+
     def clean(self):
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
-        
         if end_date and start_date and end_date < start_date:
-            raise ValidationError("End date cannot be before start date")
-        
+            raise ValidationError("La date de fin ne peut pas être antérieure à la date de début.")
         return cleaned_data
-from .models import PieceJointe
 
 class PieceJointeForm(forms.ModelForm):
     class Meta:
         model = PieceJointe
-        fields = ['chemin_storage', 'nom_fichier', 'type']  # Using the actual field names from your model
+        fields = ['chemin_storage', 'nom_fichier', 'type', 'description']
         widgets = {
-            'chemin_storage': forms.FileInput(attrs={'class': 'form-control'}),
-            'nom_fichier': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter file name'
-            }),
-            'type': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter file type'
-            }),
+            'chemin_storage': forms.FileInput(attrs={'class': 'form-control-modern'}),
+            'nom_fichier': forms.TextInput(attrs={'class': 'form-control-modern'}),
+            'type': forms.TextInput(attrs={'class': 'form-control-modern'}),
+            'description': forms.Textarea(attrs={'class': 'form-control-modern', 'rows': 2}),
         }
