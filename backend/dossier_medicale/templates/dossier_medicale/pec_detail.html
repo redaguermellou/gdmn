@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8 animate-slide-up">
+            <div class="card-modern shadow-sm border-0 mb-4 h-100">
+                <div class="card-header bg-transparent p-4 border-0 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-primary-soft text-primary rounded-circle me-3">
+                            <i class="fas fa-file-invoice-dollar fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Demande #{{ pec.reference }}</h4>
+                            <span class="text-muted small">
+                                <i class="far fa-calendar-alt me-1"></i> {{ pec.created_at|date:"d F Y à H:i" }}
+                                <span class="mx-2">•</span>
+                                <i class="fas fa-building me-1"></i> {{ pec.department }}
+                            </span>
+                        </div>
+                    </div>
+                    <span
+                        class="badge-modern bg-{{ pec.get_status_color }}-subtle text-{{ pec.get_status_color }} px-3 py-2">
+                        {{ pec.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="card-body p-4 pt-0">
+                    <div class="row g-5">
+                        <div class="col-md-12">
+                            <div class="section-group mb-5">
+                                <h6 class="text-uppercase text-muted fw-bold mb-4 ls-1">Détails Médicaux</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="text-xs text-muted mb-1 text-uppercase fw-bold">Type de
+                                            soin</label>
+                                        <p class="fw-bold fs-5 text-dark mb-0">{{ pec.get_care_type_display }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label
+                                            class="text-xs text-muted mb-1 text-uppercase fw-bold">Établissement</label>
+                                        <p class="fw-bold fs-5 text-dark mb-0">{{ pec.institution }}</p>
+                                    </div>
+                                    <div class="col-md-12 mt-4">
+                                        <label class="text-xs text-muted mb-1 text-uppercase fw-bold">Diagnostic /
+                                            Motif</label>
+                                        <div class="p-3 bg-light rounded-3">
+                                            {{ pec.diagnosis|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-group mb-5">
+                                <h6 class="text-uppercase text-muted fw-bold mb-4 ls-1">Informations de Couverture</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded-3 text-center">
+                                            <label class="text-xs text-muted d-block mb-1 text-uppercase">Coût
+                                                estimé</label>
+                                            <span class="fw-bold fs-4 text-dark">{{ pec.estimated_cost|default:"--" }}
+                                                €</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded-3 text-center">
+                                            <label
+                                                class="text-xs text-muted d-block mb-1 text-uppercase">Couverture</label>
+                                            <span class="fw-bold fs-4 text-primary">{{ pec.coverage_percentage
+                                                }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded-3 text-center">
+                                            <label class="text-xs text-muted d-block mb-1 text-uppercase">Reste à
+                                                charge</label>
+                                            <span class="fw-bold fs-4 text-danger-emphasis">
+                                                {% if remainder is not none %}
+                                                {{ remainder|floatformat:2 }} €
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-group">
+                                <h6 class="text-uppercase text-muted fw-bold mb-4 ls-1">Médecin & Durée</h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-user-md me-2"></i>Médecin
+                                            traitant</p>
+                                        <p class="fw-bold">{{ pec.physician }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1 text-muted small"><i class="fas fa-calendar-alt me-2"></i>Période
+                                            de soin</p>
+                                        <p class="fw-bold">{{ pec.start_date|date:"d/m/Y" }} au {{
+                                            pec.end_date|date:"d/m/Y"|default:"--" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Actions -->
+        <div class="col-lg-4 animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="card-modern shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4">Actions disponibles</h6>
+                    <div class="d-grid gap-2">
+                        {% if is_admin and pec.status == 'SUBMITTED' %}
+                        <form method="post" action="{% url 'pec_approve' pec.id %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success rounded-pill mb-2">
+                                <i class="fas fa-check-circle me-2"></i>Approuver
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'pec_reject' pec.id %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger rounded-pill">
+                                <i class="fas fa-times-circle me-2"></i>Rejeter
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <a href="javascript:window.print()" class="btn btn-light rounded-pill mt-2">
+                            <i class="fas fa-print me-2"></i>Imprimer
+                        </a>
+                        <a href="{% url 'pec_list' %}" class="btn btn-white text-muted rounded-pill mt-2">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-modern shadow-sm border-0 p-4">
+                <h6 class="fw-bold mb-3">Informations complémentaires</h6>
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="avatar-md rounded-circle bg-gray-100 p-2 text-center"
+                        style="width: 48px; height: 48px; font-weight: 800; font-size: 1.2rem; color: var(--primary);">
+                        {{ pec.patient.full_name|slice:":2"|upper }}
+                    </div>
+                    <div>
+                        <p class="mb-0 fw-bold text-dark">{{ pec.patient.full_name }}</p>
+                        <p class="text-xs text-muted mb-0">{{ pec.patient.email }}</p>
+                        <span class="badge bg-light text-dark text-xs mt-1">Patient</span>
+                    </div>
+                </div>
+
+                <div class="info-group mb-3">
+                    <label class="text-xs text-muted text-uppercase fw-bold">Créé par</label>
+                    <p class="small mb-0">{{ pec.created_by.full_name }}</p>
+                </div>
+
+                {% if pec.comments %}
+                <div class="info-group">
+                    <label class="text-xs text-muted text-uppercase fw-bold">Commentaires</label>
+                    <p class="small fst-italic mb-0">{{ pec.comments }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,8 +3,8 @@ import pymysql
 pymysql.install_as_MySQLdb()
 
 # Monkey patch to bypass Django's mysqlclient version check
-if not hasattr(pymysql, 'version_info') or pymysql.version_info < (1, 4, 3):
-    pymysql.version_info = (1, 4, 3, "final", 0) 
+if not hasattr(pymysql, 'version_info') or pymysql.version_info < (2, 2, 1):
+    pymysql.version_info = (2, 2, 1, "final", 0) 
 
 # MySQLdb.version_info = (2, 2, 1, 'final', 0)
 
@@ -12,6 +12,11 @@ if not hasattr(pymysql, 'version_info') or pymysql.version_info < (1, 4, 3):
 try:
     from django.db.backends.mysql.base import DatabaseWrapper
     DatabaseWrapper.check_database_version_supported = lambda self: None
+    
+    # Disable RETURNING clause for MariaDB < 10.5
+    from django.db.backends.mysql.features import DatabaseFeatures
+    DatabaseFeatures.can_return_columns_from_insert = property(lambda self: False)
+    DatabaseFeatures.can_return_rows_from_bulk_insert = property(lambda self: False)
 except ImportError:
     pass
 

@@ -43,7 +43,18 @@
                             <i class="fas fa-columns me-1"></i> Dashboard
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'pec' in request.path %}active{% endif %}" href="{% url 'pec_list' %}">
+                            <i class="fas fa-file-invoice-dollar me-1"></i> Prises en Charge
+                        </a>
+                    </li>
                     {% if request.user.role.name in 'ADMIN,CONTROLLER' %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'global_report' %}active{% endif %}"
+                            href="{% url 'global_report' %}">
+                            <i class="fas fa-chart-pie me-1"></i> Rapport Global
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}"
                             href="{% url 'audit_log' %}">

@@ -8,9 +8,32 @@ from .models import (
     DossierMedical, 
     MedicalAttachment, 
     DossierAuditLog, 
-    PieceJointe
+    PieceJointe,
+    PriseEnCharge
 )
 from user.models import User, Role
+
+@admin.register(PriseEnCharge)
+class PriseEnChargeAdmin(admin.ModelAdmin):
+    list_display = ('reference', 'patient', 'institution', 'care_type', 'status_badge')
+    list_filter = ('status', 'care_type', 'institution')
+    search_fields = ('reference', 'patient__full_name', 'institution')
+
+    def status_badge(self, obj):
+        color = {
+            'DRAFT': 'gray',
+            'SUBMITTED': 'blue', 
+            'UNDER_REVIEW': 'orange',
+            'APPROVED': 'green',
+            'REJECTED': 'red',
+            'ARCHIVED': 'black'
+        }.get(obj.status, 'gray')
+        return format_html(
+            '<span style="color: white; background-color: {}; padding: 2px 6px; border-radius: 3px">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    status_badge.short_description = 'Status'
 
 # ======================
 # USER MANAGEMENT ADMIN
@@ -123,8 +146,8 @@ class DossierMedicalAdmin(admin.ModelAdmin):
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "employer":
-            # Usually, only NORMAL users are employers
-            kwargs["queryset"] = User.objects.filter(role__name='NORMAL')
+            # Usually, only AGENT users are employers
+            kwargs["queryset"] = User.objects.filter(role__name='AGENT')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(MedicalAttachment)

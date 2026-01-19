@@ -20,4 +20,13 @@ urlpatterns = [
     path('<int:dossier_id>/report/', views.generate_report, name='generate_report'),
     path('dossiers/create/', views.create_dossier, name='create_dossier'),
     path('audit-log/', views.audit_log, name='audit_log'),
+    path('global-report/', views.global_report, name='global_report'),
+    
+    # Prise en Charge
+    path('pec/', views.pec_list, name='pec_list'),
+    path('pec/create/', views.pec_create, name='pec_create'),
+    path('pec/<int:pec_id>/', views.pec_detail, name='pec_detail'),
+    path('pec/<int:pec_id>/approve/', views.pec_approve, name='pec_approve'),
+    path('pec/<int:pec_id>/reject/', views.pec_reject, name='pec_reject'),
+    path('pec/<int:pec_id>/delete/', views.pec_delete, name='pec_delete'),
 ]

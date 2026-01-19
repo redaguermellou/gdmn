@@ -11,9 +11,10 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.units import inch
 import zipfile
 import io
-from .models import DossierMedical, PieceJointe, DossierAuditLog
-from .forms import DossierForm, PieceJointeForm
+from .models import DossierMedical, PieceJointe, DossierAuditLog, PriseEnCharge
+from .forms import DossierForm, PieceJointeForm, PriseEnChargeForm
 from django.db.models import Q
+from decimal import Decimal
 
 # Helper Functions
 from django.shortcuts import render
@@ -46,10 +47,8 @@ def dossier_list(request):
     user = request.user
 
     # Base queryset per role
-    if user.role.name == 'NORMAL':
-        dossiers = DossierMedical.objects.filter(employer=user)
-        template = 'dossier_medicale/list_normal.html'
-    elif user.role.name in ['ADMIN', 'CONTROLLER']:
+    # Base queryset per role
+    if user.role.name in ['ADMIN', 'CONTROLLER']:
         dossiers = DossierMedical.objects.all()
         template = 'dossier_medicale/list_admin.html'
     elif user.role.name == 'AGENT':
@@ -57,7 +56,7 @@ def dossier_list(request):
         template = 'dossier_medicale/list_agent.html'
     else:
         dossiers = DossierMedical.objects.none()
-        template = 'dossier_medicale/list_normal.html'
+        template = 'dossier_medicale/list_agent.html'
 
     # Apply search filter if needed
     if query:
@@ -67,10 +66,28 @@ def dossier_list(request):
             Q(employer__last_name__icontains=query)
         )
 
-    return render(request, template, {
+    import json
+    
+    context = {
         'dossiers': dossiers,
         'search_query': query,
-    })
+    }
+
+    # Add statistics for Admin/Controller
+    if user.role.name in ['ADMIN', 'CONTROLLER']:
+        # General stats
+        stats = {
+            'total': dossiers.count(),
+            'approved': dossiers.filter(status='APPROVED').count(),
+            'pending': dossiers.filter(status__in=['SUBMITTED', 'UNDER_REVIEW']).count(),
+            'rejected': dossiers.filter(status='REJECTED').count(),
+        }
+        
+        context.update({
+            'stats': stats,
+        })
+
+    return render(request, template, context)
 
 def get_role_actions(user, dossier):
     """Returns available actions based on user role and dossier status"""
@@ -83,17 +100,11 @@ def get_role_actions(user, dossier):
         'url': '#details'
     })
     
-    # Normal User specific actions
-    if user.role.name == 'NORMAL':
-        if dossier.created_by == user:
-            actions.append({
-                'name': 'download_all',
-                'label': 'Download All Documents',
-                'url': reverse('download_all', args=[dossier.id])
-            })
+    # No more normal user specific actions info
+    pass
     
     # Agent specific actions
-    elif user.role.name == 'AGENT':
+    if user.role.name == 'AGENT':
         actions.extend([
             {
                 'name': 'upload',
@@ -159,9 +170,7 @@ def dossier_detail(request, dossier_id):
             documents.append(piece)
     
     # Determine template based on user role
-    if request.user.role.name == 'NORMAL':
-        template = 'dossier_medicale/detail.html'
-    elif request.user.role.name in ['ADMIN', 'CONTROLLER']:
+    if request.user.role.name in ['ADMIN', 'CONTROLLER']:
         template = 'dossier_medicale/detail_admin.html'
     else:  # AGENT or other roles
         template = 'dossier_medicale/detail.html'
@@ -171,7 +180,6 @@ def dossier_detail(request, dossier_id):
         'documents': documents,
         'actions': get_role_actions(request.user, dossier),
         'is_owner': dossier.created_by == request.user,
-        'is_normal_user': request.user.role.name == 'NORMAL',
         'is_agent': request.user.role.name == 'AGENT',
         'is_controller': request.user.role.name == 'CONTROLLER',
         'is_admin': request.user.role.name == 'ADMIN',
@@ -427,9 +435,6 @@ def generate_report(request, dossier_id):
     # Permission check
     if request.user.role.name in ['CONTROLLER', 'ADMIN']:
         pass
-    elif request.user.role.name == 'NORMAL':
-        if dossier.employer.id != request.user.id:
-            return HttpResponseForbidden()
     elif request.user.role.name == 'AGENT' and dossier.created_by == request.user:
         pass
     else:
@@ -579,3 +584,181 @@ def audit_log(request):
         return HttpResponseForbidden()
     logs = DossierAuditLog.objects.select_related('dossier', 'user').order_by('-timestamp')
     return render(request, 'dossier_medicale/audit_log.html', {'logs': logs})
+
+# Prise en Charge Views
+@login_required
+def pec_list(request):
+    query = request.GET.get('q', '').strip()
+    user = request.user
+
+    if user.role.name in ['ADMIN', 'CONTROLLER']:
+        pecs = PriseEnCharge.objects.all()
+    else:
+        pecs = PriseEnCharge.objects.filter(Q(patient=user) | Q(created_by=user))
+
+    if query:
+        pecs = pecs.filter(
+            Q(reference__icontains=query) |
+            Q(patient__full_name__icontains=query) |
+            Q(institution__icontains=query)
+        )
+
+    return render(request, 'dossier_medicale/pec_list.html', {
+        'pecs': pecs,
+        'search_query': query,
+    })
+
+@login_required
+def pec_create(request):
+    if request.method == 'POST':
+        form = PriseEnChargeForm(request.POST, user=request.user)
+        if form.is_valid():
+            pec = form.save(commit=False)
+            pec.created_by = request.user
+            pec.status = 'SUBMITTED'
+            pec.save()
+            messages.success(request, f'Prise en charge {pec.reference} créée avec succès.')
+            return redirect('pec_detail', pec_id=pec.id)
+    else:
+        form = PriseEnChargeForm(user=request.user)
+    
+    return render(request, 'dossier_medicale/pec_create.html', {'form': form})
+
+@login_required
+def pec_detail(request, pec_id):
+    pec = get_object_or_404(PriseEnCharge, pk=pec_id)
+    if not pec.user_can_view(request.user):
+        raise PermissionDenied()
+    
+    remainder = None
+    if pec.estimated_cost:
+        remainder = pec.estimated_cost * (Decimal('1.0') - (Decimal(str(pec.coverage_percentage)) / Decimal('100.0')))
+
+    return render(request, 'dossier_medicale/pec_detail.html', {
+        'pec': pec,
+        'remainder': remainder,
+        'is_admin': request.user.role.name in ['ADMIN', 'CONTROLLER']
+    })
+
+@login_required
+def pec_approve(request, pec_id):
+    if request.user.role.name not in ['ADMIN', 'CONTROLLER']:
+        return HttpResponseForbidden()
+    pec = get_object_or_404(PriseEnCharge, pk=pec_id)
+    pec.status = 'APPROVED'
+    pec.save()
+    messages.success(request, 'Prise en charge approuvée.')
+    return redirect('pec_detail', pec_id=pec.id)
+
+@login_required
+def pec_reject(request, pec_id):
+    if request.user.role.name not in ['ADMIN', 'CONTROLLER']:
+        return HttpResponseForbidden()
+    pec = get_object_or_404(PriseEnCharge, pk=pec_id)
+    pec.status = 'REJECTED'
+    pec.save()
+    messages.warning(request, 'Prise en charge rejetée.')
+    return redirect('pec_detail', pec_id=pec.id)
+
+@login_required
+def pec_delete(request, pec_id):
+    pec = get_object_or_404(PriseEnCharge, pk=pec_id)
+    if request.user.role.name != 'ADMIN' and pec.created_by != request.user:
+        return HttpResponseForbidden()
+    pec.delete()
+    messages.success(request, 'Prise en charge supprimée.')
+    return redirect('pec_list')
+
+@login_required
+def global_report(request):
+    if request.user.role.name not in ['ADMIN', 'CONTROLLER']:
+        return HttpResponseForbidden()
+
+    from django.db.models import Count, Sum
+    import json
+
+    # --- Dossier Stats ---
+    dossiers = DossierMedical.objects.all()
+    dossier_stats = {
+        'total': dossiers.count(),
+        'approved': dossiers.filter(status='APPROVED').count(),
+        'pending': dossiers.filter(status__in=['SUBMITTED', 'UNDER_REVIEW']).count(),
+        'rejected': dossiers.filter(status='REJECTED').count(),
+    }
+
+    status_counts = list(dossiers.values('status').annotate(count=Count('id')))
+    priority_counts = list(dossiers.values('priority').annotate(count=Count('id')))
+    dept_counts = list(dossiers.values('department').annotate(count=Count('id')))
+
+    chart_dossier_status = {
+        'labels': [dict(DossierMedical.STATUS_CHOICES).get(s['status']) for s in status_counts],
+        'data': [s['count'] for s in status_counts],
+        'colors': [DossierMedical.get_status_hex_by_status(s['status']) for s in status_counts]
+    }
+
+    priority_labels = dict(DossierMedical.PRIORITY_LEVELS)
+    chart_dossier_priority = {
+        'labels': [priority_labels.get(p['priority']) for p in priority_counts],
+        'data': [p['count'] for p in priority_counts]
+    }
+
+    chart_dossier_dept = {
+        'labels': [d['department'] for d in dept_counts],
+        'data': [d['count'] for d in dept_counts]
+    }
+
+    # --- Prise en Charge Stats ---
+    pecs = PriseEnCharge.objects.all()
+    pec_stats = {
+        'total': pecs.count(),
+        'approved': pecs.filter(status='APPROVED').count(),
+        'pending': pecs.filter(status__in=['SUBMITTED', 'UNDER_REVIEW']).count(),
+        'rejected': pecs.filter(status='REJECTED').count(),
+        'total_cost': pecs.aggregate(total=Sum('estimated_cost'))['total'] or 0,
+    }
+
+    pec_status_counts = list(pecs.values('status').annotate(count=Count('id')))
+    pec_type_counts = list(pecs.values('care_type').annotate(count=Count('id')))
+
+    chart_pec_status = {
+        'labels': [dict(PriseEnCharge.STATUS_CHOICES).get(s['status']) for s in pec_status_counts],
+        'data': [s['count'] for s in pec_status_counts],
+        'colors': [PriseEnCharge.get_status_hex_by_status(s['status']) for s in pec_status_counts]
+    }
+
+    chart_pec_type = {
+        'labels': [dict(PriseEnCharge.CARE_TYPES).get(t['care_type']) for t in pec_type_counts],
+        'data': [t['count'] for t in pec_type_counts]
+    }
+
+    # Data for Tables
+    dossier_table = []
+    for status_code, status_label in DossierMedical.STATUS_CHOICES:
+        count = dossiers.filter(status=status_code).count()
+        dossier_table.append({'label': status_label, 'count': count})
+
+    pec_table = []
+    for type_code, type_label in PriseEnCharge.CARE_TYPES:
+        count = pecs.filter(care_type=type_code).count()
+        cost = pecs.filter(care_type=type_code).aggregate(total=Sum('estimated_cost'))['total'] or 0
+        pec_table.append({'label': type_label, 'count': count, 'cost': cost})
+
+    # Recent & Critical lists
+    critical_dossiers = dossiers.filter(priority__gte=3).order_by('-created_at')[:5]
+    recent_pecs = pecs.order_by('-created_at')[:5]
+
+    context = {
+        'dossier_stats': dossier_stats,
+        'pec_stats': pec_stats,
+        'dossier_table': dossier_table,
+        'pec_table': pec_table,
+        'critical_dossiers': critical_dossiers,
+        'recent_pecs': recent_pecs,
+        'chart_dossier_status': json.dumps(chart_dossier_status),
+        'chart_dossier_priority': json.dumps(chart_dossier_priority),
+        'chart_dossier_dept': json.dumps(chart_dossier_dept),
+        'chart_pec_status': json.dumps(chart_pec_status),
+        'chart_pec_type': json.dumps(chart_pec_type),
+    }
+
+    return render(request, 'dossier_medicale/report_global.html', context)

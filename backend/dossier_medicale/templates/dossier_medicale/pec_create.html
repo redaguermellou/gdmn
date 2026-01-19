@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-modern animate-slide-up">
+                <div class="card-header bg-transparent border-0 p-4 pt-5 text-center">
+                    <div class="icon-box bg-primary-soft text-primary rounded-circle mx-auto mb-3"
+                        style="width: 60px; height: 60px;">
+                        <i class="fas fa-file-signature fa-lg"></i>
+                    </div>
+                    <h3 class="fw-bold">Demander une Prise en Charge</h3>
+                    <p class="text-muted">Remplissez les informations nécessaires pour votre demande de couverture
+                        médicale.</p>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    {% if form.errors %}
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Veuillez corriger les
+                            erreurs suivantes :</h6>
+                        {{ form.non_field_errors }}
+                        <ul class="mb-0 small">
+                            {% for field in form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <form method="post" class="modern-form">
+                        {% csrf_token %}
+
+                        <div class="section-title mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-user-medical me-2 text-primary"></i>Informations
+                                Patient & Établissement</h5>
+                            <hr class="mt-2 text-muted opacity-25">
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Patient</label>
+                                {{ form.patient }}
+                                {% if form.patient.errors %}
+                                <div class="text-danger small mt-1">{{ form.patient.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Établissement</label>
+                                {{ form.institution }}
+                                {% if form.institution.errors %}
+                                <div class="text-danger small mt-1">{{ form.institution.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12" style="display: none;">
+                                <label class="form-label fw-600">Département (Auto-rempli)</label>
+                                {{ form.department }}
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Type de soin</label>
+                                {{ form.care_type }}
+                                {% if form.care_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.care_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Médecin traitant</label>
+                                {{ form.physician }}
+                                {% if form.physician.errors %}
+                                <div class="text-danger small mt-1">{{ form.physician.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="section-title mb-4 mt-5">
+                            <h5 class="fw-bold"><i class="fas fa-notes-medical me-2 text-primary"></i>Détails de la
+                                demande</h5>
+                            <hr class="mt-2 text-muted opacity-25">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600">Diagnostic / Motif</label>
+                            {{ form.diagnosis }}
+                            {% if form.diagnosis.errors %}
+                            <div class="text-danger small mt-1">{{ form.diagnosis.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Coût estimé</label>
+                                <div class="input-group-modern">
+                                    <span class="ps-3 text-muted">€</span>
+                                    {{ form.estimated_cost }}
+                                </div>
+                                {% if form.estimated_cost.errors %}
+                                <div class="text-danger small mt-1">{{ form.estimated_cost.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Taux de couverture (%)</label>
+                                {{ form.coverage_percentage }}
+                                {% if form.coverage_percentage.errors %}
+                                <div class="text-danger small mt-1">{{ form.coverage_percentage.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Date de début</label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.start_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600">Date de fin</label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.end_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-600">Commentaires additionnels</label>
+                            {{ form.comments }}
+                            {% if form.comments.errors %}
+                            <div class="text-danger small mt-1">{{ form.comments.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-end pt-4 border-top">
+                            <a href="{% url 'pec_list' %}" class="btn btn-light px-4 fw-bold">Annuler</a>
+                            <button type="submit" class="btn btn-modern-primary px-5">
+                                Soumettre la demande <i class="fas fa-paper-plane ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

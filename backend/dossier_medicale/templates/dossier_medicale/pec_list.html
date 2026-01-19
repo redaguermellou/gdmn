@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row align-items-center mb-5 animate-slide-down">
+        <div class="col-md-6">
+            <h2 class="fw-bold mb-1" style="color: var(--text-main);">
+                Prises en Charge <span class="badge bg-primary-soft text-primary ms-2">{{ pecs.count }}</span>
+            </h2>
+            <p class="text-muted mb-0">Gestion des demandes de prise en charge médicale.</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'pec_create' %}" class="btn btn-modern-primary shadow-lg hover-lift">
+                <i class="fas fa-plus-circle me-2"></i>Nouvelle Demande
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card-modern p-2 mb-5 animate-fade-in" style="animation-delay: 0.1s;">
+        <form method="get" action="{% url 'pec_list' %}" class="row g-2 align-items-center">
+            <div class="col-md-10">
+                <div class="input-group-modern border-0 bg-transparent">
+                    <span class="input-icon ps-3"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-0 bg-transparent ps-5 py-2"
+                        placeholder="Rechercher par référence, patient ou établissement..."
+                        value="{{ search_query|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="submit" class="btn btn-light w-100 h-100 fw-bold text-primary">
+                    Rechercher
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- PEC Grid -->
+    <div class="row g-4">
+        {% for pec in pecs %}
+        <div class="col-xl-4 col-lg-6 col-md-6 animate-fade-up">
+            <div class="card-modern h-100 card-hover-effect position-relative overflow-hidden group">
+                <div class="status-stripe bg-{{ pec.get_status_color }}"></div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box bg-blue-soft text-primary rounded-circle">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">#{{ pec.reference }}</h6>
+                                <span class="text-xs text-muted">{{ pec.get_care_type_display }} • {{ pec.department
+                                    }}</span>
+                            </div>
+                        </div>
+                        <span
+                            class="badge rounded-pill bg-{{ pec.get_status_color }}-subtle text-{{ pec.get_status_color }} border border-{{ pec.get_status_color }}-subtle">
+                            {{ pec.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="pec-meta mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div
+                                class="avatar-sm rounded-circle bg-gray-200 me-2 d-flex align-items-center justify-content-center text-xs fw-bold text-secondary">
+                                {{ pec.patient.full_name|slice:":2"|upper }}
+                            </div>
+                            <span class="text-sm fw-medium text-secondary">{{ pec.patient.full_name }}</span>
+                        </div>
+                        <div class="text-sm text-muted mt-2">
+                            <i class="fas fa-hospital me-2"></i>{{ pec.institution }}
+                        </div>
+                        <div class="d-flex justify-content-between text-xs text-muted mt-3">
+                            <span><i class="far fa-calendar me-1"></i>{{ pec.start_date|date:"d M Y" }}</span>
+                            <span class="fw-bold text-primary">{{ pec.coverage_percentage }}% Couverture</span>
+                        </div>
+                    </div>
+
+                    <hr class="border-dashed my-3 opacity-50">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'pec_detail' pec.id %}"
+                            class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3">
+                            Voir détails
+                        </a>
+                        <div class="action-buttons group-hover-visible transition-all">
+                            {% if pec.status != 'APPROVED' %}
+                            <form method="post" action="{% url 'pec_delete' pec.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="btn-icon btn-icon-sm text-danger hover-danger border-0 bg-transparent"
+                                    onclick="return confirm('Confirmer la suppression ?');">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 mt-5">
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted opacity-50 mb-3"></i>
+                <h5 class="text-muted fw-normal">Aucune prise en charge trouvée</h5>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

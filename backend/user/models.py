@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 
 class Role(models.Model):
     ROLE_CHOICES = [
-        ('NORMAL', 'Normal User'),
         ('AGENT', 'Medical Agent'),
         ('CONTROLLER', 'Quality Controller'),
         ('ADMIN', 'System Admin'),
@@ -53,6 +52,13 @@ class User(AbstractUser):
         null=True,
         help_text=_('Unique identifier for the employee in the organization')
     )
+    department = models.CharField(
+        _('department'),
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=_('Department the user belongs to')
+    )
     # Add custom related_name for groups and user_permissions
     groups = models.ManyToManyField(
         Group,
@@ -89,7 +95,7 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.pk:  
             if not hasattr(self, 'role'):
-                self.role = Role.objects.get_or_create(name='NORMAL')[0]
+                self.role = Role.objects.get_or_create(name='AGENT')[0]
         super().save(*args, **kwargs)
     def get_full_name(self):
         return self.full_name
