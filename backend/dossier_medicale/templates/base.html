@@ -182,6 +182,85 @@
                     bsAlert.close();
                 }, 5000); // 5 seconds
             });
+
+            // --- Easter Egg: Konami Code ---
+            const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+            let konamiIndex = 0;
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === konamiCode[konamiIndex]) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        triggerEasterEgg();
+                        konamiIndex = 0;
+                    }
+                } else {
+                    konamiIndex = 0;
+                }
+            });
+
+            // --- Easter Egg: Logo Click ---
+            let logoClicks = 0;
+            const logos = document.querySelectorAll('.navbar-brand, .brand-logo img');
+            logos.forEach(logo => {
+                logo.addEventListener('click', (e) => {
+                    logoClicks++;
+                    if (logoClicks >= 5) {
+                        e.preventDefault();
+                        triggerEasterEgg();
+                        logoClicks = 0;
+                    }
+                });
+            });
+
+            function triggerEasterEgg() {
+                // Heart Shower
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.className = 'easter-egg-heart';
+                        heart.innerHTML = ['❤️', '🩺', '💊', '🏥', '🚑'][Math.floor(Math.random() * 5)];
+                        heart.style.left = Math.random() * 100 + 'vw';
+                        heart.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                        document.body.appendChild(heart);
+                        setTimeout(() => heart.remove(), 3000);
+                    }, i * 100);
+                }
+
+                // Spin the logo icon
+                const logoIcon = document.querySelector('.navbar-brand i');
+                if (logoIcon) {
+                    logoIcon.classList.add('spin-logo');
+                    setTimeout(() => logoIcon.classList.remove('spin-logo'), 5000);
+                }
+
+                // Party Mode (Rainbow effect)
+                document.body.classList.add('party-mode');
+                setTimeout(() => document.body.classList.remove('party-mode'), 8000);
+
+                // Toast notification
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: var(--primary);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 50px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    font-weight: 700;
+                    animation: slideUp 0.5s ease-out;
+                `;
+                toast.innerHTML = '🩺 Mode Super Docteur Activé ! ❤️';
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.animation = 'slideDown 0.5s ease-in forwards';
+                    setTimeout(() => toast.remove(), 500);
+                }, 4000);
+            }
         });
     </script>
     {% block scripts %}{% endblock %}
